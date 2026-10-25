@@ -1,0 +1,9 @@
+{
+  "name": "GCB - Gestão e Controle do Bebê",
+  "short_name": "GCB",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f5fb",
+  "theme_color": "#7c6cf0",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
