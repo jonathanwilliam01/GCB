@@ -1,4 +1,4 @@
-import { Data, MealSlot, SleepDay, toMin } from './models';
+import { ageMonths, Data, MealSlot, SleepDay, toMin } from './models';
 
 export interface AwakeWindow {
   start: number;
@@ -82,4 +82,15 @@ export const mealTimes = (plan: MealSlot[], wins: AwakeWindow[]): MealTime[] => 
       return { ...m, at, pred: m.ref === 'start' ? w.startPred : w.endPred };
     })
     .sort((a, b) => a.at - b.at);
+};
+
+export const mealPlan = (data: Data, date: string): MealSlot[] => {
+  const b = data.baby;
+  if (b.meals) return b.meals;
+  return suggestMeals(b.birth ? ageMonths(b.birth, date) : 9, b.windows.length);
+};
+
+export const dayMeals = (data: Data, date: string) => {
+  const day = data.days[date];
+  return day ? mealTimes(mealPlan(data, date), awakeWindows(data, date, day)) : null;
 };

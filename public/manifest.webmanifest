@@ -1,9 +1,17 @@
 {
   "name": "GCB - Gestão e Controle do Bebê",
   "short_name": "GCB",
-  "start_url": "/",
+  "description": "Sono, janelas de vigília, alimentação e medidas do bebê",
+  "lang": "pt-BR",
   "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
   "background_color": "#f6f5fb",
   "theme_color": "#7c6cf0",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
 }

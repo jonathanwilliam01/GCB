@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Mask } from './mask';
 import { MealsCard } from './meals';
 import { Store } from './store';
+import { Actions } from './actions';
 import { sleepTip } from './tips';
 import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since, SleepDay, today, toMin } from './models';
 
@@ -56,7 +57,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since
         @if (d.night) {
           <p class="big">🌙 Sono noturno às {{ hh(d.night) }}</p>
           <p class="muted">Dia encerrado · sono diurno {{ dur(totalSleep()) }}</p>
-          <button class="btn" (click)="set(x => x.night = undefined)">Desfazer</button>
+          <button class="btn" (click)="actions.undoNight(date())">Desfazer</button>
         } @else if (sleeping()) {
           <p class="big">😴 Dormindo desde {{ hh(lastNap()!.start) }}</p>
           @if (since(lastNap()!.start, now()) >= 0) { <p class="muted">há {{ dur(since(lastNap()!.start, now())) }}</p> }
@@ -119,6 +120,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since
 })
 export class SleepPage {
   private store = inject(Store);
+  readonly actions = inject(Actions);
   readonly hh = hh;
   readonly dur = dur;
   readonly diff = diff;
@@ -193,8 +195,7 @@ export class SleepPage {
   }
 
   start() {
-    const windows = this.store.data().baby.windows;
-    this.store.mutate((d) => (d.days[this.date()] = { wake: this.wakeInput || nowHM(), windows: [...windows], naps: [] }));
+    this.actions.startDay(this.date(), this.wakeInput || nowHM());
   }
 
   applyTip() {
@@ -203,15 +204,15 @@ export class SleepPage {
   }
 
   sleepNow() {
-    this.set((d) => d.naps.push({ start: nowHM() }));
+    this.actions.sleep(this.date());
   }
 
   wakeNow() {
-    this.set((d) => (d.naps[d.naps.length - 1].end = nowHM()));
+    this.actions.wake(this.date());
   }
 
   nightNow() {
-    this.set((d) => (d.night = nowHM()));
+    this.actions.night(this.date());
   }
 
   addNap() {

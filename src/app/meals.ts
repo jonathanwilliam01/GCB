@@ -2,8 +2,8 @@ import { Component, computed, DestroyRef, inject, input, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { Mask } from './mask';
 import { Store } from './store';
-import { ageMonths, dur, fromMin, hh, MealSlot, nowHM, today, toMin } from './models';
-import { awakeWindows, mealTimes, suggestMeals } from './schedule';
+import { dur, fromMin, hh, MealSlot, nowHM, today, toMin } from './models';
+import { dayMeals, mealPlan } from './schedule';
 
 @Component({
   selector: 'app-meals',
@@ -87,18 +87,10 @@ export class MealsCard {
 
   private baby = computed(() => this.store.data().baby);
   custom = computed(() => !!this.baby().meals);
-  plan = computed<MealSlot[]>(() => {
-    const b = this.baby();
-    if (b.meals) return b.meals;
-    const months = b.birth ? ageMonths(b.birth, this.date()) : 9;
-    return suggestMeals(months, b.windows.length);
-  });
+  plan = computed<MealSlot[]>(() => mealPlan(this.store.data(), this.date()));
   windowOpts = computed(() => Array.from({ length: Math.max(this.baby().windows.length - 1, 1) }, (_, i) => i + 1));
 
-  times = computed(() => {
-    const day = this.store.data().days[this.date()];
-    return day ? mealTimes(this.plan(), awakeWindows(this.store.data(), this.date(), day)) : null;
-  });
+  times = computed(() => dayMeals(this.store.data(), this.date()));
 
   // "agora" no mesmo eixo dos horários (minutos desde a meia-noite do dia, pode passar de 1440)
   private nowAt = computed(() => {

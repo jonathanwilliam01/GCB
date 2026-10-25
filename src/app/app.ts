@@ -6,9 +6,15 @@ import { FoodPage } from './food';
 import { GrowthPage } from './growth';
 import { TipsPage } from './tips-page';
 import { ProfilePage } from './profile';
+import { OverviewPage } from './overview';
+import { ReportsPage } from './reports-page';
 import { PATCH_NOTES, VERSION } from './version';
+import { QuickActions } from './quick';
+import { Backup } from './backup';
+import { Notifier } from './notifier';
+import { Pwa } from './pwa';
 
-type Tab = 'sleep' | 'food' | 'growth' | 'tips' | 'profile' | 'notes';
+type Tab = 'overview' | 'sleep' | 'food' | 'growth' | 'reports' | 'tips' | 'profile' | 'notes';
 type Theme = 'auto' | 'light' | 'dark';
 
 const read = (k: string) => {
@@ -21,7 +27,7 @@ const read = (k: string) => {
 
 @Component({
   selector: 'app-root',
-  imports: [SleepPage, FoodPage, GrowthPage, TipsPage, ProfilePage],
+  imports: [QuickActions, OverviewPage, SleepPage, FoodPage, GrowthPage, ReportsPage, TipsPage, ProfilePage],
   template: `
     <header>
       <button class="icon menu-btn" aria-label="Menu" (click)="open.set(true)">☰</button>
@@ -48,6 +54,10 @@ const read = (k: string) => {
         }
       </div>
 
+      @if (pwa.canInstall()) {
+        <div class="side-menu"><button (click)="pwa.install()"><span>📲</span>Instalar app</button></div>
+      }
+
       <div class="side-foot">
         <small class="muted">Tema</small>
         <div class="seg">
@@ -61,9 +71,11 @@ const read = (k: string) => {
 
     <main>
       @switch (tab()) {
+        @case ('overview') { <app-overview (go)="go($event)" /> }
         @case ('sleep') { <app-sleep /> }
         @case ('food') { <app-food /> }
         @case ('growth') { <app-growth /> }
+        @case ('reports') { <app-reports /> }
         @case ('tips') { <app-tips (goProfile)="go('profile')" /> }
         @case ('profile') { <app-profile /> }
         @case ('notes') {
@@ -79,21 +91,31 @@ const read = (k: string) => {
       }
     </main>
 
+    <app-quick />
+
+    @if (pwa.updateReady()) {
+      <div class="update-bar">✨ Nova versão disponível <button class="btn primary" (click)="pwa.update()">Atualizar</button></div>
+    }
+
     <div class="toast" [class.show]="store.toast()" role="status">{{ store.toast() }}</div>
   `,
 })
 export class App {
   readonly store = inject(Store);
+  readonly pwa = inject(Pwa);
+  private services = [inject(Backup), inject(Notifier)];
   readonly tabs: { id: Tab; icon: string; label: string }[] = [
+    { id: 'overview', icon: '🏠', label: 'Visão geral' },
     { id: 'sleep', icon: '😴', label: 'Sono' },
     { id: 'food', icon: '🥕', label: 'Alimentos' },
     { id: 'growth', icon: '📏', label: 'Medidas' },
+    { id: 'reports', icon: '📊', label: 'Relatórios' },
     { id: 'tips', icon: '💡', label: 'Dicas' },
     { id: 'profile', icon: '👶', label: 'Bebê' },
   ];
   baby = computed(() => this.store.data().baby);
   age = computed(() => ageText(this.baby().birth));
-  tab = signal<Tab>(this.baby().name ? 'sleep' : 'profile');
+  tab = signal<Tab>(this.baby().name ? 'overview' : 'profile');
   current = computed(() => this.tabs.find((t) => t.id === this.tab()) ?? { icon: '📝', label: 'Novidades' });
   readonly version = VERSION;
   readonly notes = PATCH_NOTES;

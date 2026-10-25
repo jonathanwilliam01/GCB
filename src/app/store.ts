@@ -7,10 +7,19 @@ const KEY = 'gcb:data';
 export class Store {
   readonly data = signal<Data>(this.load());
   readonly toast = signal('');
+  readonly lastBackup = signal(this.read('gcb:lastBackup'));
   private toastTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
     navigator.storage?.persist?.();
+  }
+
+  private read(k: string) {
+    try {
+      return localStorage.getItem(k) ?? '';
+    } catch {
+      return '';
+    }
   }
 
   private load(): Data {
@@ -47,6 +56,14 @@ export class Store {
     a.download = `gcb-backup-${today()}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+    this.markBackup();
+  }
+
+  markBackup() {
+    try {
+      localStorage.setItem('gcb:lastBackup', today());
+    } catch {}
+    this.lastBackup.set(today());
   }
 
   async importJson(file: File) {
