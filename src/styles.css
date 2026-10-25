@@ -505,3 +505,12 @@ main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 .wtable { display: grid; grid-template-columns: 0.8fr 1fr 1.3fr 1fr; gap: 4px; padding: 8px 0 4px; font-size: 14px; border-top: 1px solid var(--line); }
 .wtable.head { font-size: 12px; color: var(--muted); font-weight: 600; border-top: 0; }
 .wnote { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; color: var(--muted); }
+
+/* marca */
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; cursor: pointer; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.brand img { width: 36px; height: 36px; border-radius: 10px; }
+.brand b { display: block; font-size: 17px; letter-spacing: 0.5px; color: var(--accent); }
+.brand small { display: block; color: var(--muted); font-size: 12px; }
+.side-head { padding-top: 18px; }
+.avatar .initial { font-weight: 700; color: var(--accent); font-size: 0.75em; }

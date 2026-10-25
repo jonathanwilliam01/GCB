@@ -31,21 +31,27 @@ const read = (k: string) => {
   template: `
     <header>
       <button class="icon menu-btn" aria-label="Menu" (click)="open.set(true)">☰</button>
-      <b class="grow">{{ current().icon }} {{ current().label }}</b>
+      <img class="brand-mark" src="icon.svg" alt="GCB" (click)="go('overview')" />
+      <b class="grow">{{ current().label }}</b>
       <span class="avatar sm" (click)="go('profile')">
-        @if (baby().photo) { <img [src]="baby().photo" alt="" /> } @else { 👶 }
+        @if (baby().photo) { <img [src]="baby().photo" alt="" /> } @else { <span class="initial">{{ initial() }}</span> }
       </span>
     </header>
 
     <div class="backdrop" [class.show]="open()" (click)="open.set(false)"></div>
 
     <aside [class.open]="open()">
+      <div class="brand">
+        <img src="icon.svg" alt="" />
+        <div><b>GCB</b><small>Gestão e Controle do Bebê</small></div>
+      </div>
+
       <div class="side-head">
         <span class="avatar lg" (click)="go('profile')">
-          @if (baby().photo) { <img [src]="baby().photo" alt="" /> } @else { 👶 }
+          @if (baby().photo) { <img [src]="baby().photo" alt="" /> } @else { <span class="initial">{{ initial() }}</span> }
         </span>
         <b>{{ baby().name || 'Seu bebê' }}</b>
-        <small>{{ baby().birth ? age() : 'GCB · Gestão e Controle do Bebê' }}</small>
+        <small>{{ baby().birth ? age() : 'Cadastre o bebê' }}</small>
       </div>
 
       <div class="side-menu">
@@ -115,6 +121,7 @@ export class App {
   ];
   baby = computed(() => this.store.data().baby);
   age = computed(() => ageText(this.baby().birth));
+  initial = computed(() => (this.baby().name.trim()[0] || '+').toUpperCase());
   tab = signal<Tab>(this.baby().name ? 'overview' : 'profile');
   current = computed(() => this.tabs.find((t) => t.id === this.tab()) ?? { icon: '📝', label: 'Novidades' });
   readonly version = VERSION;

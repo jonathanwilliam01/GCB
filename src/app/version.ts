@@ -1,6 +1,11 @@
-export const VERSION = 'V1.26.10.03';
+export const VERSION = 'V1.26.10.04';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.04',
+    date: '2026-10-25',
+    items: ['Nova logo do GCB (bebê dormindo na lua) no ícone do app, favicon, tela de abertura, cabeçalho e menu'],
+  },
   {
     version: 'V1.26.10.03',
     date: '2026-10-25',

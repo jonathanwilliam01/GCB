@@ -1,5 +1,9 @@
 # Patch Notes
 
+## V1.26.10.04 (25/10/2026)
+
+- Nova logo do GCB (bebê dormindo na lua) no ícone do app, favicon, tela de abertura, cabeçalho e menu
+
 ## V1.26.10.03 (25/10/2026)
 
 - Botão rápido (+) em todas as telas: acordou, dormiu, sono noturno e comeu em um toque
