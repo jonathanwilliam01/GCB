@@ -107,6 +107,10 @@ const brand = (name: string, custom: boolean) => {
       }
 
       <div class="side-foot">
+        <div class="row between side-conta">
+          <small class="muted grow">{{ auth.user()?.email }}</small>
+          <button class="btn" (click)="store.sair()">Sair</button>
+        </div>
         <small class="muted">Tema</small>
         <div class="seg">
           <button [class.on]="theme() === 'light'" (click)="theme.set('light')">☀️ Claro</button>

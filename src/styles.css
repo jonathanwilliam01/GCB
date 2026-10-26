@@ -136,6 +136,9 @@ aside.open { transform: none; box-shadow: 4px 0 24px rgb(0 0 0 / 0.2); }
 
 .side-foot { margin-top: auto; padding: 12px 14px calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
 .side-foot .seg { margin: 6px 0 10px; }
+.side-conta { gap: 8px; margin-bottom: 10px; }
+.side-conta small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-conta .btn { padding: 6px 12px; font-size: 13px; color: var(--danger); }
 .side-foot .seg button { font-size: 13px; padding: 7px 4px; }
 
 @media (min-width: 900px) {

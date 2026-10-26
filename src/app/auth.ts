@@ -29,7 +29,7 @@ export class Auth {
 
   /** false quando o Supabase exige confirmar o e-mail antes de entrar */
   async cadastrar(email: string, senha: string) {
-    const { data, error } = await supabase.auth.signUp({ email, password: senha });
+    const { data, error } = await supabase.auth.signUp({ email, password: senha, options: { emailRedirectTo: location.origin } });
     if (error) throw new Error(traduz(error.message));
     return !!data.session;
   }
@@ -55,6 +55,7 @@ function traduz(m: string) {
   if (/already registered/i.test(m)) return 'E-mail já cadastrado';
   if (/email not confirmed/i.test(m)) return 'Confirme seu e-mail antes de entrar';
   if (/at least 6/i.test(m)) return 'A senha precisa ter ao menos 6 caracteres';
+  if (/rate limit/i.test(m)) return 'Muitos e-mails enviados. Aguarde alguns minutos e tente de novo.';
   if (/different from the old/i.test(m)) return 'A nova senha precisa ser diferente da atual';
   return m;
 }
