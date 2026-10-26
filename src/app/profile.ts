@@ -6,7 +6,7 @@ import { Backup } from './backup';
 import { Notifier } from './notifier';
 import { Pwa } from './pwa';
 import { PhotoCrop } from './photo-crop';
-import { Baby, Crop } from './models';
+import { Baby, Crop, dur } from './models';
 
 @Component({
   selector: 'app-profile',
@@ -85,15 +85,45 @@ import { Baby, Crop } from './models';
       @if (notifier.permission() === 'unsupported') {
         <p class="muted small">Este navegador não suporta notificações. Os avisos aparecem dentro do app.</p>
       }
-      <label class="switch"><input type="checkbox" [checked]="notifier.settings().on" (change)="notifier.update({ on: $any($event.target).checked })" /> Avisar hora de dormir e de comer</label>
+      <label class="switch"><input type="checkbox" [checked]="notifier.settings().on" (change)="notifier.update({ on: $any($event.target).checked })" /> Ativar lembretes</label>
       @if (notifier.settings().on) {
-        <div class="row gap">
-          <span class="muted small">Avisar antes da soneca:</span>
-          <select [ngModel]="notifier.settings().before" (ngModelChange)="notifier.update({ before: +$event })">
-            @for (m of [5, 10, 15, 20, 30]; track m) { <option [ngValue]="m">{{ m }} min</option> }
+        @let n = notifier.settings();
+        <div class="opt">
+          <span>Janela acabando</span>
+          <select [ngModel]="n.before" (ngModelChange)="notifier.update({ before: +$event })">
+            <option [ngValue]="0">desligado</option>
+            @for (m of [5, 10, 15, 20, 30]; track m) { <option [ngValue]="m">{{ m }} min antes</option> }
           </select>
         </div>
-        <label class="switch"><input type="checkbox" [checked]="notifier.settings().meals" (change)="notifier.update({ meals: $any($event.target).checked })" /> Avisar horários de refeição</label>
+        <div class="opt">
+          <span>Hora de dormir (fim da janela)</span>
+          <input type="checkbox" [checked]="n.end" (change)="notifier.update({ end: $any($event.target).checked })" />
+        </div>
+        <div class="opt">
+          <span>Ainda acordado depois da janela</span>
+          <select [ngModel]="n.late" (ngModelChange)="notifier.update({ late: +$event })">
+            <option [ngValue]="0">desligado</option>
+            @for (m of [10, 15, 20, 30, 45]; track m) { <option [ngValue]="m">{{ m }} min depois</option> }
+          </select>
+        </div>
+        <div class="opt">
+          <span>Soneca passou de</span>
+          <select [ngModel]="n.napMax" (ngModelChange)="notifier.update({ napMax: +$event })">
+            <option [ngValue]="0">desligado</option>
+            @for (m of [60, 90, 120, 150, 180]; track m) { <option [ngValue]="m">{{ dur(m) }}</option> }
+          </select>
+        </div>
+        <div class="opt">
+          <span>Horários de refeição</span>
+          <input type="checkbox" [checked]="n.meals" (change)="notifier.update({ meals: $any($event.target).checked })" />
+        </div>
+        <div class="opt">
+          <span>Lembrar de registrar o acordar</span>
+          <select [ngModel]="n.wakeBy" (ngModelChange)="notifier.update({ wakeBy: +$event })">
+            <option [ngValue]="0">desligado</option>
+            @for (h of [6, 7, 8, 9, 10]; track h) { <option [ngValue]="h * 60">às {{ h }}h</option> }
+          </select>
+        </div>
         @if (notifier.permission() === 'denied') {
           <p class="danger small">Notificações bloqueadas no navegador. Libere nas configurações do site.</p>
         }
@@ -170,6 +200,7 @@ export class ProfilePage {
   readonly backup = inject(Backup);
   readonly notifier = inject(Notifier);
   readonly pwa = inject(Pwa);
+  readonly dur = dur;
   readonly bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   b: Baby = structuredClone(this.store.data().baby);
   appName = this.store.data().appName ?? '';

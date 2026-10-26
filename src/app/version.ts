@@ -1,6 +1,16 @@
-export const VERSION = 'V1.26.10.05';
+export const VERSION = 'V1.26.10.06';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.06',
+    date: '2026-10-26',
+    items: [
+      'Novos lembretes: janela passou do horário (ainda acordado), soneca longa e lembrete de registrar o acordar',
+      'Cada lembrete pode ser ligado/desligado e ter o tempo ajustado',
+      'Aviso fica fixo no topo do app até fechar, com botão para registrar na hora (Dormiu/Acordou)',
+      'Avisos perdidos com o app em segundo plano aparecem ao voltar, sem repetir os já mostrados',
+    ],
+  },
   {
     version: 'V1.26.10.05',
     date: '2026-10-26',

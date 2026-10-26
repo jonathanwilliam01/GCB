@@ -11,7 +11,8 @@ import { ReportsPage } from './reports-page';
 import { PATCH_NOTES, VERSION } from './version';
 import { QuickActions } from './quick';
 import { Backup } from './backup';
-import { Notifier } from './notifier';
+import { Act, Notifier } from './notifier';
+import { Actions } from './actions';
 import { Pwa } from './pwa';
 
 type Tab = 'overview' | 'sleep' | 'food' | 'growth' | 'reports' | 'tips' | 'profile' | 'notes';
@@ -128,13 +129,24 @@ const brand = (name: string, custom: boolean) => {
       <div class="update-bar">✨ Nova versão disponível <button class="btn primary" (click)="pwa.update()">Atualizar</button></div>
     }
 
+    @if (notifier.alert(); as a) {
+      <div class="alert-bar" role="alert">
+        <div class="grow"><b>{{ a.title }}</b><small>{{ a.body }}</small></div>
+        @if (a.act) { <button class="btn primary" (click)="act(a.act)">{{ actLabel[a.act] }}</button> }
+        <button class="icon" aria-label="Fechar" (click)="notifier.alert.set(null)">×</button>
+      </div>
+    }
+
     <div class="toast" [class.show]="store.toast()" role="status">{{ store.toast() }}</div>
   `,
 })
 export class App {
   readonly store = inject(Store);
   readonly pwa = inject(Pwa);
-  private services = [inject(Backup), inject(Notifier)];
+  readonly notifier = inject(Notifier);
+  private actions = inject(Actions);
+  private services = [inject(Backup)];
+  readonly actLabel: Record<Act, string> = { day: '☀️ Acordou', sleep: '😴 Dormiu', wake: '☀️ Acordou' };
   readonly tabs: { id: Tab; icon: string; label: string }[] = [
     { id: 'overview', icon: '🏠', label: 'Visão geral' },
     { id: 'sleep', icon: '😴', label: 'Sono' },
@@ -172,6 +184,14 @@ export class App {
   @HostListener('document:keydown.escape')
   close() {
     this.open.set(false);
+  }
+
+  act(a: Act) {
+    const s = this.actions.state();
+    if (a === 'day' && s === 'noday') this.actions.startDay();
+    if (a === 'sleep' && s === 'awake') this.actions.sleep();
+    if (a === 'wake' && s === 'nap') this.actions.wake();
+    this.notifier.alert.set(null);
   }
 
   go(t: Tab) {

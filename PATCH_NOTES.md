@@ -1,5 +1,12 @@
 # Patch Notes
 
+## V1.26.10.06 (26/10/2026)
+
+- Novos lembretes: janela passou do horário (ainda acordado), soneca longa e lembrete de registrar o acordar
+- Cada lembrete pode ser ligado/desligado e ter o tempo ajustado
+- Aviso fica fixo no topo do app até fechar, com botão para registrar na hora (Dormiu/Acordou)
+- Avisos perdidos com o app em segundo plano aparecem ao voltar, sem repetir os já mostrados
+
 ## V1.26.10.05 (26/10/2026)
 
 - Foto do bebê: ajustar enquadramento (arrastar e zoom) ao escolher ou depois, e tocar para ver em tela cheia
