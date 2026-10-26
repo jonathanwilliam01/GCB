@@ -7,9 +7,15 @@ if (existsSync('.env')) {
   }
 }
 
-const url = process.env.SUPABASE_URL ?? '';
-const key = process.env.SUPABASE_ANON_KEY ?? '';
-if (!url || !key) console.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY não definidos');
+// nomes próprios ou os criados pela integração Supabase da Vercel
+const env = (...nomes) => nomes.map((n) => process.env[n]).find(Boolean) ?? '';
+const url = env('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
+const key = env('SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEY', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+if (!url || !key) {
+  console.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY não definidos');
+  // na Vercel não publica um app sem banco
+  if (process.env.VERCEL) process.exit(1);
+}
 
 mkdirSync('src/environments', { recursive: true });
 writeFileSync(

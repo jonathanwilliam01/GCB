@@ -60,7 +60,7 @@ const brand = (name: string, custom: boolean) => {
     @if (!store.pronto()) {
       <div style="min-height: 100vh; display: grid; place-content: center"><img src="icon.svg" width="96" height="96" alt="" /></div>
     } @else if (!store.bebe() || store.adicionando() || auth.recuperando()) {
-      <main><app-acesso /></main>
+      <app-acesso />
     } @else {
     <header>
       <button class="icon menu-btn" aria-label="Menu" (click)="open.set(true)">☰</button>
@@ -94,7 +94,8 @@ const brand = (name: string, custom: boolean) => {
         }
       </div>
 
-      <div class="side-menu" style="flex: 0">
+      <small class="side-label">Bebês</small>
+      <div class="side-menu">
         @for (b of store.bebes(); track b.id) {
           @if (b.id !== store.bebeId()) { <button (click)="trocar(b.id)"><span>👶</span>{{ b.nome || 'Sem nome' }}</button> }
         }
@@ -126,14 +127,16 @@ const brand = (name: string, custom: boolean) => {
         @case ('tips') { <app-tips (goProfile)="go('profile')" /> }
         @case ('profile') { <app-profile /> }
         @case ('notes') {
-          @for (n of notes; track n.version) {
-            <div class="card">
-              <h3>{{ n.version }} <small class="muted">· {{ n.date.split('-').reverse().join('/') }}</small></h3>
-              <ul>
-                @for (i of n.items; track i) { <li>{{ i }}</li> }
-              </ul>
-            </div>
-          }
+          <div>
+            @for (n of notes; track n.version) {
+              <div class="card">
+                <h3>{{ n.version }} <small class="muted">· {{ n.date.split('-').reverse().join('/') }}</small></h3>
+                <ul>
+                  @for (i of n.items; track i) { <li>{{ i }}</li> }
+                </ul>
+              </div>
+            }
+          </div>
         }
       }
     </main>
