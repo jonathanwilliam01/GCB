@@ -1,7 +1,8 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Mask } from './mask';
-import { Store } from './store';
+import { Membro, Store } from './store';
+import { Auth } from './auth';
 import { Backup } from './backup';
 import { Notifier } from './notifier';
 import { Pwa } from './pwa';
@@ -147,9 +148,36 @@ import { Baby, Crop, dur } from './models';
     }
 
     <div class="card">
+      <b>👨‍👩‍👧 Compartilhar</b>
+      <p class="muted small">Quem entrar com este código acompanha e registra junto, em tempo real.</p>
+      <div class="row between item">
+        <b class="big">{{ store.bebe()?.codigo }}</b>
+        <button class="btn" (click)="copiar()">Copiar</button>
+      </div>
+      <p class="sub">Quem acompanha</p>
+      @for (m of store.membros(); track m.user_id) {
+        <div class="row between item">
+          <span>{{ m.email || 'Sem e-mail' }}@if (m.papel === 'dono') { <small class="muted"> · dono</small> }</span>
+          @if (store.souDono() && m.user_id !== auth.user()?.id) { <button class="link danger" (click)="remover(m)">remover</button> }
+        </div>
+      }
+      <div class="row gap">
+        @if (store.souDono()) { <button class="link" (click)="novoCodigo()">gerar novo código</button> }
+        <button class="link danger" (click)="sairBebe()">deixar de acompanhar</button>
+        @if (store.souDono()) { <button class="link danger" (click)="sairBebe(true)">excluir bebê</button> }
+      </div>
+      <p class="muted small">ⓘ Novo código: o antigo para de funcionar. Se o dono sair, quem entrou primeiro vira dono; quando o último sair, os dados do bebê são apagados.</p>
+      <p class="sub">Conta</p>
+      <div class="row between item">
+        <span class="muted">{{ auth.user()?.email }}</span>
+        <button class="link danger" (click)="store.sair()">sair</button>
+      </div>
+    </div>
+
+    <div class="card">
       <b>💾 Backup dos dados</b>
       <p class="muted small">
-        Os dados ficam só neste aparelho.
+        Os dados ficam salvos na sua conta.
         @if (store.lastBackup()) { Último backup: {{ store.lastBackup().split('-').reverse().join('/') }}. } @else { Nenhum backup feito ainda. }
       </p>
       <div class="row gap">
@@ -197,6 +225,7 @@ import { Baby, Crop, dur } from './models';
 })
 export class ProfilePage {
   readonly store = inject(Store);
+  readonly auth = inject(Auth);
   readonly backup = inject(Backup);
   readonly notifier = inject(Notifier);
   readonly pwa = inject(Pwa);
@@ -216,6 +245,28 @@ export class ProfilePage {
   save() {
     const baby = structuredClone(this.b);
     this.store.mutate((d) => (d.baby = baby));
+  }
+
+  copiar() {
+    navigator.clipboard?.writeText(this.store.bebe()!.codigo).then(() => this.store.notify('✓ Código copiado'));
+  }
+
+  async novoCodigo() {
+    if (!confirm('Gerar novo código? O atual para de funcionar.')) return;
+    await this.store.novoCodigo().catch((e) => alert(e.message));
+  }
+
+  async remover(m: Membro) {
+    if (!confirm(`Remover ${m.email || 'esta pessoa'}? Ela deixa de ver os dados do bebê.`)) return;
+    await this.store.removerMembro(m.user_id).catch((e) => alert(e.message));
+  }
+
+  async sairBebe(excluir = false) {
+    const msg = excluir
+      ? 'Excluir o bebê e TODOS os dados para todos que acompanham?'
+      : 'Deixar de acompanhar este bebê? Se ninguém mais acompanhar, os dados são apagados.';
+    if (!confirm(msg)) return;
+    await this.store.sairBebe(excluir).catch((e) => alert(e.message));
   }
 
   async restore(date: string) {

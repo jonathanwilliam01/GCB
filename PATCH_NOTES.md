@@ -1,5 +1,15 @@
 # Patch Notes
 
+## V1.26.10.07 (26/10/2026)
+
+- Login com e-mail e senha; dados salvos na conta (Supabase) em vez do navegador
+- Compartilhar o bebê com outras pessoas por código, com atualização em tempo real
+- Dados que estavam só no aparelho podem ser levados para a conta no primeiro acesso
+- Funciona sem internet: alterações ficam no aparelho e são enviadas ao reconectar
+- Vários bebês na mesma conta, com troca pelo menu
+- Dono do bebê: gera novo código, remove quem acompanha e exclui o bebê
+- Esqueci minha senha por e-mail
+
 ## V1.26.10.06 (26/10/2026)
 
 - Novos lembretes: janela passou do horário (ainda acordado), soneca longa e lembrete de registrar o acordar

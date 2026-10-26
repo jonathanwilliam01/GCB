@@ -1,6 +1,19 @@
-export const VERSION = 'V1.26.10.06';
+export const VERSION = 'V1.26.10.07';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.07',
+    date: '2026-10-26',
+    items: [
+      'Login com e-mail e senha; dados salvos na conta em vez do navegador',
+      'Compartilhar o bebê com outras pessoas por código, com atualização em tempo real',
+      'Dados que estavam só no aparelho podem ser levados para a conta no primeiro acesso',
+      'Funciona sem internet: alterações ficam no aparelho e são enviadas ao reconectar',
+      'Vários bebês na mesma conta, com troca pelo menu',
+      'Dono do bebê: gera novo código, remove quem acompanha e exclui o bebê',
+      'Esqueci minha senha por e-mail',
+    ],
+  },
   {
     version: 'V1.26.10.06',
     date: '2026-10-26',

@@ -14,6 +14,8 @@ import { Backup } from './backup';
 import { Act, Notifier } from './notifier';
 import { Actions } from './actions';
 import { Pwa } from './pwa';
+import { Acesso } from './acesso';
+import { Auth } from './auth';
 
 type Tab = 'overview' | 'sleep' | 'food' | 'growth' | 'reports' | 'tips' | 'profile' | 'notes';
 type Theme = 'auto' | 'light' | 'dark';
@@ -53,12 +55,18 @@ const brand = (name: string, custom: boolean) => {
 
 @Component({
   selector: 'app-root',
-  imports: [QuickActions, OverviewPage, SleepPage, FoodPage, GrowthPage, ReportsPage, TipsPage, ProfilePage],
+  imports: [QuickActions, OverviewPage, SleepPage, FoodPage, GrowthPage, ReportsPage, TipsPage, ProfilePage, Acesso],
   template: `
+    @if (!store.pronto()) {
+      <div style="min-height: 100vh; display: grid; place-content: center"><img src="icon.svg" width="96" height="96" alt="" /></div>
+    } @else if (!store.bebe() || store.adicionando() || auth.recuperando()) {
+      <main><app-acesso /></main>
+    } @else {
     <header>
       <button class="icon menu-btn" aria-label="Menu" (click)="open.set(true)">☰</button>
       <img class="brand-mark" src="icon.svg" [alt]="store.appName()" (click)="go('overview')" />
       <b class="grow">{{ current().label }}</b>
+      @if (store.pendente()) { <span title="Alterações salvas no aparelho, aguardando internet">📴</span> }
       <span class="avatar sm" (click)="go('profile')">
         @if (baby().photo) { <img [src]="baby().photo" alt="" /> } @else { <span class="initial">{{ initial() }}</span> }
       </span>
@@ -84,6 +92,13 @@ const brand = (name: string, custom: boolean) => {
         @for (t of tabs; track t.id) {
           <button [class.on]="tab() === t.id" (click)="go(t.id)"><span>{{ t.icon }}</span>{{ t.label }}</button>
         }
+      </div>
+
+      <div class="side-menu" style="flex: 0">
+        @for (b of store.bebes(); track b.id) {
+          @if (b.id !== store.bebeId()) { <button (click)="trocar(b.id)"><span>👶</span>{{ b.nome || 'Sem nome' }}</button> }
+        }
+        <button (click)="store.adicionando.set(true); open.set(false)"><span>➕</span>Adicionar bebê</button>
       </div>
 
       @if (pwa.canInstall()) {
@@ -136,12 +151,14 @@ const brand = (name: string, custom: boolean) => {
         <button class="icon" aria-label="Fechar" (click)="notifier.alert.set(null)">×</button>
       </div>
     }
+    }
 
     <div class="toast" [class.show]="store.toast()" role="status">{{ store.toast() }}</div>
   `,
 })
 export class App {
   readonly store = inject(Store);
+  readonly auth = inject(Auth);
   readonly pwa = inject(Pwa);
   readonly notifier = inject(Notifier);
   private actions = inject(Actions);
@@ -159,7 +176,7 @@ export class App {
   baby = computed(() => this.store.data().baby);
   age = computed(() => ageText(this.baby().birth));
   initial = computed(() => (this.baby().name.trim()[0] || '+').toUpperCase());
-  tab = signal<Tab>(this.baby().name ? 'overview' : 'profile');
+  tab = signal<Tab>('overview');
   current = computed(() => this.tabs.find((t) => t.id === this.tab()) ?? { icon: '📝', label: 'Novidades' });
   readonly version = VERSION;
   readonly notes = PATCH_NOTES;
@@ -192,6 +209,11 @@ export class App {
     if (a === 'sleep' && s === 'awake') this.actions.sleep();
     if (a === 'wake' && s === 'nap') this.actions.wake();
     this.notifier.alert.set(null);
+  }
+
+  async trocar(id: string) {
+    await this.store.selecionar(id);
+    this.go('overview');
   }
 
   go(t: Tab) {

@@ -43,6 +43,8 @@ export class PhotoCrop {
 
   ngOnInit() {
     const img = new Image();
+    // foto do Storage: sem isso o canvas fica bloqueado para exportar
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       this.img = img;
       this.set(this.crop() ?? { x: 0.5, y: 0.5, z: 1 });
