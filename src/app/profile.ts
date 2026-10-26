@@ -1,22 +1,47 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Mask } from './mask';
 import { Store } from './store';
 import { Backup } from './backup';
 import { Notifier } from './notifier';
 import { Pwa } from './pwa';
-import { Baby } from './models';
+import { PhotoCrop } from './photo-crop';
+import { Baby, Crop } from './models';
 
 @Component({
   selector: 'app-profile',
-  imports: [FormsModule, Mask],
+  imports: [FormsModule, Mask, PhotoCrop],
   template: `
     <div class="card center">
-      <label class="avatar xl">
-        @if (b.photo) { <img [src]="b.photo" alt="" /> } @else { <span>📷</span> }
-        <input type="file" accept="image/*" hidden (change)="photo($event)" />
-      </label>
-      @if (b.photo) { <button class="link danger" (click)="b.photo = ''; save()">remover foto</button> }
+      @if (b.photo) {
+        <span class="avatar xl" title="Ver foto" (click)="view.set(true)"><img [src]="b.photo" alt="" /></span>
+        <div class="row center-row">
+          <label class="link">trocar<input type="file" accept="image/*" hidden (change)="photo($event)" /></label>
+          <button class="link" (click)="crop.set(b.photoFull || b.photo)">ajustar</button>
+          <button class="link danger" (click)="removePhoto()">remover</button>
+        </div>
+      } @else {
+        <label class="avatar xl">
+          <span>📷</span>
+          <input type="file" accept="image/*" hidden (change)="photo($event)" />
+        </label>
+      }
+    </div>
+
+    @if (crop(); as src) {
+      <app-photo-crop [src]="src" [crop]="src === b.photoFull ? b.photoCrop : undefined" (save)="cropped(src, $event)" (cancel)="crop.set('')" />
+    }
+
+    @if (view()) {
+      <div class="viewer" (click)="view.set(false)">
+        <img [src]="b.photoFull || b.photo" alt="" />
+        <button class="icon" aria-label="Fechar">×</button>
+      </div>
+    }
+
+    <div class="card form">
+      <label>Nome do app<input [(ngModel)]="appName" placeholder="GCB" maxlength="30" (change)="saveName()" /></label>
+      <p class="muted small">Aparece no cabeçalho, no menu e no título do app. Vazio volta para GCB.</p>
     </div>
 
     <div class="card form">
@@ -82,7 +107,7 @@ import { Baby } from './models';
         <b>📲 Instalar o app</b>
         @if (pwa.canInstall()) {
           <p class="muted small">Abre em tela cheia, funciona sem internet e fica na tela inicial.</p>
-          <button class="btn primary block" (click)="pwa.install()">Instalar GCB</button>
+          <button class="btn primary block" (click)="pwa.install()">Instalar {{ store.appName() }}</button>
         } @else if (pwa.ios) {
           <p class="muted small">No Safari, toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>
         } @else {
@@ -119,7 +144,7 @@ import { Baby } from './models';
             <button class="btn" (click)="backup.reconnect()">Reconectar</button>
           }
           @default {
-            <p class="muted small">Escolha um arquivo (ex.: dentro da pasta do Google Drive no PC) e o GCB salva nele sozinho.</p>
+            <p class="muted small">Escolha um arquivo (ex.: dentro da pasta do Google Drive no PC) e o {{ store.appName() }} salva nele sozinho.</p>
             <button class="btn" (click)="backup.chooseFile()">Escolher arquivo</button>
           }
         }
@@ -147,6 +172,15 @@ export class ProfilePage {
   readonly pwa = inject(Pwa);
   readonly bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   b: Baby = structuredClone(this.store.data().baby);
+  appName = this.store.data().appName ?? '';
+  readonly crop = signal('');
+  readonly view = signal(false);
+
+  @HostListener('document:keydown.escape')
+  close() {
+    this.view.set(false);
+    this.crop.set('');
+  }
 
   save() {
     const baby = structuredClone(this.b);
@@ -160,6 +194,28 @@ export class ProfilePage {
 
   reload() {
     this.b = structuredClone(this.store.data().baby);
+    this.appName = this.store.data().appName ?? '';
+  }
+
+  saveName() {
+    const name = this.appName.trim();
+    this.store.mutate((d) => (d.appName = name));
+  }
+
+  removePhoto() {
+    if (!confirm('Remover a foto?')) return;
+    this.b.photo = '';
+    delete this.b.photoFull;
+    delete this.b.photoCrop;
+    this.save();
+  }
+
+  cropped(src: string, e: { photo: string; crop: Crop }) {
+    this.b.photo = e.photo;
+    this.b.photoFull = src;
+    this.b.photoCrop = e.crop;
+    this.crop.set('');
+    this.save();
   }
 
   setWindow(i: number, v: number | null) {
@@ -185,15 +241,14 @@ export class ProfilePage {
     if (!file) return;
     const img = new Image();
     img.onload = () => {
-      const max = 400;
+      const max = 1080;
       const s = Math.min(1, max / Math.max(img.width, img.height));
       const c = document.createElement('canvas');
       c.width = img.width * s;
       c.height = img.height * s;
       c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
-      this.b.photo = c.toDataURL('image/jpeg', 0.8);
       URL.revokeObjectURL(img.src);
-      this.save();
+      this.crop.set(c.toDataURL('image/jpeg', 0.82));
     };
     img.src = URL.createObjectURL(file);
   }

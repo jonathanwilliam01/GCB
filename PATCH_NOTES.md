@@ -1,5 +1,10 @@
 # Patch Notes
 
+## V1.26.10.05 (26/10/2026)
+
+- Foto do bebê: ajustar enquadramento (arrastar e zoom) ao escolher ou depois, e tocar para ver em tela cheia
+- Nome do app personalizado: aparece no cabeçalho, menu, título e no app instalado
+
 ## V1.26.10.04 (25/10/2026)
 
 - Nova logo do GCB (bebê dormindo na lua) no ícone do app, favicon, tela de abertura, cabeçalho e menu

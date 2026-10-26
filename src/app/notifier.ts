@@ -45,7 +45,7 @@ export class Notifier {
   }
 
   test() {
-    this.show('🔔 Teste do GCB', 'Os lembretes estão funcionando.', 'test');
+    this.show(`🔔 Teste do ${this.store.appName()}`, 'Os lembretes estão funcionando.', 'test');
   }
 
   private events() {

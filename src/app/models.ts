@@ -6,12 +6,21 @@ export interface Baby {
   birth: string;
   sex: Sex;
   photo: string;
+  photoFull?: string;
+  photoCrop?: Crop;
   birthWeight?: number;
   birthHeight?: number;
   blood: string;
   notes: string;
   windows: number[];
   meals?: MealSlot[];
+}
+
+// centro do recorte (fração da imagem) e zoom
+export interface Crop {
+  x: number;
+  y: number;
+  z: number;
 }
 
 export interface MealSlot {
@@ -53,6 +62,7 @@ export interface Measure {
 
 export interface Data {
   version: 1;
+  appName?: string;
   baby: Baby;
   days: Record<string, SleepDay>;
   foods: FoodEntry[];

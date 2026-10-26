@@ -90,7 +90,7 @@ export class Backup {
       const pick = (window as unknown as { showSaveFilePicker: (o: object) => Promise<Handle> }).showSaveFilePicker;
       this.handle = await pick({
         suggestedName: 'gcb-backup.json',
-        types: [{ description: 'Backup GCB', accept: { 'application/json': ['.json'] } }],
+        types: [{ description: `Backup ${this.store.appName()}`, accept: { 'application/json': ['.json'] } }],
       });
       await put('file', this.handle);
       this.fileName.set(this.handle.name);
@@ -119,7 +119,7 @@ export class Backup {
   async share() {
     const file = new File([this.json()], `gcb-backup-${today()}.json`, { type: 'application/json' });
     try {
-      await navigator.share({ files: [file], title: 'Backup GCB' });
+      await navigator.share({ files: [file], title: `Backup ${this.store.appName()}` });
       this.store.markBackup();
     } catch {}
   }

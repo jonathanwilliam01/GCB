@@ -514,3 +514,31 @@ main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 .brand small { display: block; color: var(--muted); font-size: 12px; }
 .side-head { padding-top: 18px; }
 .avatar .initial { font-weight: 700; color: var(--accent); font-size: 0.75em; }
+
+/* foto */
+.modal-bg { z-index: 17; }
+.center-row { justify-content: center; gap: 4px; margin-top: 6px; }
+label.link { display: inline-block; }
+.modal {
+  position: fixed; left: 50%; top: 50%; z-index: 18; transform: translate(-50%, -50%);
+  width: min(340px, calc(100vw - 32px));
+  background: var(--card); border-radius: 20px; padding: 16px; text-align: center;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.3);
+}
+.modal p { margin: 4px 0 12px; }
+.crop {
+  position: relative; width: 260px; height: 260px; margin: 0 auto;
+  border-radius: 50%; overflow: hidden; background: var(--bg);
+  touch-action: none; cursor: grab; user-select: none;
+}
+.crop:active { cursor: grabbing; }
+.crop img { position: absolute; max-width: none; pointer-events: none; }
+.zoom { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; font-size: 16px; }
+.zoom input { flex: 1; accent-color: var(--accent); padding: 0; border: 0; background: none; }
+.viewer {
+  position: fixed; inset: 0; z-index: 19; background: rgb(0 0 0 / 0.9);
+  display: grid; place-items: center; padding: 16px; cursor: zoom-out;
+}
+.viewer img { max-width: 100%; max-height: 100%; border-radius: 12px; }
+.viewer .icon { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px; color: #fff; font-size: 32px; }
+@media print { .modal, .viewer { display: none !important; } }

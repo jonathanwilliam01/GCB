@@ -25,13 +25,38 @@ const read = (k: string) => {
   }
 };
 
+const DEFAULT_TITLE = 'GCB - Gestão e Controle do Bebê';
+const DEFAULT_MANIFEST = document.querySelector('link[rel=manifest]')?.getAttribute('href') ?? '';
+
+// título da aba, nome no iOS e manifest com o nome personalizado
+const brand = (name: string, custom: boolean) => {
+  document.title = custom ? name : DEFAULT_TITLE;
+  document.querySelector('meta[name=apple-mobile-web-app-title]')?.setAttribute('content', name);
+  try {
+    localStorage.setItem('gcb:appName', custom ? name : '');
+  } catch {}
+  const link = document.querySelector('link[rel=manifest]');
+  if (!link) return;
+  if (!custom) return link.setAttribute('href', DEFAULT_MANIFEST);
+  const abs = (u: string) => new URL(u, document.baseURI).href;
+  fetch(DEFAULT_MANIFEST)
+    .then((r) => r.json())
+    .then((m) => {
+      m.id = m.start_url = m.scope = abs('./');
+      m.name = m.short_name = name;
+      m.icons = m.icons.map((i: { src: string }) => ({ ...i, src: abs(i.src) }));
+      link.setAttribute('href', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m)));
+    })
+    .catch(() => {});
+};
+
 @Component({
   selector: 'app-root',
   imports: [QuickActions, OverviewPage, SleepPage, FoodPage, GrowthPage, ReportsPage, TipsPage, ProfilePage],
   template: `
     <header>
       <button class="icon menu-btn" aria-label="Menu" (click)="open.set(true)">☰</button>
-      <img class="brand-mark" src="icon.svg" alt="GCB" (click)="go('overview')" />
+      <img class="brand-mark" src="icon.svg" [alt]="store.appName()" (click)="go('overview')" />
       <b class="grow">{{ current().label }}</b>
       <span class="avatar sm" (click)="go('profile')">
         @if (baby().photo) { <img [src]="baby().photo" alt="" /> } @else { <span class="initial">{{ initial() }}</span> }
@@ -43,7 +68,7 @@ const read = (k: string) => {
     <aside [class.open]="open()">
       <div class="brand">
         <img src="icon.svg" alt="" />
-        <div><b>GCB</b><small>Gestão e Controle do Bebê</small></div>
+        <div><b>{{ store.appName() }}</b>@if (!store.data().appName) { <small>Gestão e Controle do Bebê</small> }</div>
       </div>
 
       <div class="side-head">
@@ -71,7 +96,7 @@ const read = (k: string) => {
           <button [class.on]="theme() === 'dark'" (click)="theme.set('dark')">🌙 Escuro</button>
           <button [class.on]="theme() === 'auto'" (click)="theme.set('auto')">Auto</button>
         </div>
-        <button class="link version" (click)="go('notes')">GCB {{ version }} · novidades</button>
+        <button class="link version" (click)="go('notes')">{{ store.appName() }} {{ version }} · novidades</button>
       </div>
     </aside>
 
@@ -130,6 +155,7 @@ export class App {
   theme = signal<Theme>((read('gcb:theme') as Theme) || 'auto');
 
   constructor() {
+    effect(() => brand(this.store.appName(), !!this.store.data().appName));
     effect(() => {
       const t = this.theme();
       const root = document.documentElement;

@@ -1,6 +1,14 @@
-export const VERSION = 'V1.26.10.04';
+export const VERSION = 'V1.26.10.05';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.05',
+    date: '2026-10-26',
+    items: [
+      'Foto do bebê: ajustar enquadramento (arrastar e zoom) ao escolher ou depois, e tocar para ver em tela cheia',
+      'Nome do app personalizado: aparece no cabeçalho, menu, título e no app instalado',
+    ],
+  },
   {
     version: 'V1.26.10.04',
     date: '2026-10-25',

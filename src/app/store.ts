@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { Data, emptyData, today } from './models';
 
 const KEY = 'gcb:data';
@@ -8,6 +8,7 @@ export class Store {
   readonly data = signal<Data>(this.load());
   readonly toast = signal('');
   readonly lastBackup = signal(this.read('gcb:lastBackup'));
+  readonly appName = computed(() => this.data().appName?.trim() || 'GCB');
   private toastTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
@@ -75,7 +76,7 @@ export class Store {
       this.mutate((cur) => Object.assign(cur, emptyData(), d, { baby: { ...emptyData().baby, ...d.baby } }));
       this.notify('✓ Dados importados');
     } catch {
-      alert('Arquivo inválido. Use um backup exportado pelo GCB.');
+      alert(`Arquivo inválido. Use um backup exportado pelo ${this.appName()}.`);
     }
   }
 
