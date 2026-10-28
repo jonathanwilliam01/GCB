@@ -56,7 +56,7 @@ import { isAllergen, untried } from './tips';
         <div class="card list">
           @for (e of g.items; track e.id) {
             <div class="row between item">
-              <span>{{ icon(e.reaction) }} <b>{{ e.food }}</b> @if (e.notes) { <small class="muted">· {{ e.notes }}</small> }</span>
+              <span>{{ icon(e.reaction) }} <b>{{ e.food }}</b> @if (e.notes) { <small class="muted">· {{ e.notes }}</small> } @if (store.quem(e.by); as q) { <small class="muted">· {{ q }}</small> }</span>
               <button class="icon danger" (click)="remove(e.id)">×</button>
             </div>
           }
@@ -81,7 +81,7 @@ import { isAllergen, untried } from './tips';
   `,
 })
 export class FoodPage {
-  private store = inject(Store);
+  readonly store = inject(Store);
   readonly reactions = REACTIONS;
   readonly br = br;
 
@@ -137,7 +137,7 @@ export class FoodPage {
   save() {
     const food = this.food.trim();
     if (!food) return;
-    const e = { id: uid(), date: this.date || today(), food, reaction: this.reaction, notes: this.notes.trim() };
+    const e = { id: uid(), date: this.date || today(), food, reaction: this.reaction, notes: this.notes.trim(), by: this.store.uid() };
     this.store.mutate((d) => d.foods.push(e));
     this.food = '';
     this.notes = '';

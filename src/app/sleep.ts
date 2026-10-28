@@ -5,7 +5,7 @@ import { MealsCard } from './meals';
 import { Store } from './store';
 import { Actions } from './actions';
 import { sleepTip } from './tips';
-import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since, SleepDay, today, toMin } from './models';
+import { ageMonths, ageText, br, diff, dur, fromMin, hh, Nap, nowHM, shiftDate, since, SleepDay, today, toMin } from './models';
 
 @Component({
   selector: 'app-sleep',
@@ -32,7 +32,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since
       @let d = day()!;
       <div class="card">
         <div class="row between">
-          <span>☀️ Acordou</span>
+          <span>☀️ Acordou @if (store.quem(d.wakeBy); as q) { <small class="muted">· {{ q }}</small> }</span>
           <input mask="time" [ngModel]="d.wake" (ngModelChange)="$event && set(x => x.wake = $event)" />
         </div>
         <div class="chips">
@@ -56,11 +56,11 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since
       <div class="card status" [class.sleeping]="sleeping()" [class.late]="!sleeping() && late() > 0">
         @if (d.night) {
           <p class="big">🌙 Sono noturno às {{ hh(d.night) }}</p>
-          <p class="muted">Dia encerrado · sono diurno {{ dur(totalSleep()) }}</p>
+          <p class="muted">Dia encerrado · sono diurno {{ dur(totalSleep()) }}@if (store.quem(d.nightBy); as q) { · {{ q }} }</p>
           <button class="btn" (click)="actions.undoNight(date())">Desfazer</button>
         } @else if (sleeping()) {
           <p class="big">😴 Dormindo desde {{ hh(lastNap()!.start) }}</p>
-          @if (since(lastNap()!.start, now()) >= 0) { <p class="muted">há {{ dur(since(lastNap()!.start, now())) }}</p> }
+          @if (since(lastNap()!.start, now()) >= 0) { <p class="muted">há {{ dur(since(lastNap()!.start, now())) }}@if (store.quem(lastNap()!.by); as q) { · {{ q }} }</p> }
           <button class="btn primary block" (click)="wakeNow()">Acordou agora</button>
         } @else {
           <p class="muted">Próxima: {{ next().label }} · janela {{ dur(next().window) }}</p>
@@ -97,6 +97,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since
             <small class="muted full">
               acordado {{ dur(awake(i)) }} de {{ dur(winAt(i)) }}
               @if (awake(i) - winAt(i); as dlt) { ({{ dlt > 0 ? '+' : '−' }}{{ dur(abs(dlt)) }}) }
+              @if (quemNap(n); as q) { · {{ q }} }
             </small>
           </div>
         } @empty {
@@ -119,7 +120,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, nowHM, shiftDate, since
   `,
 })
 export class SleepPage {
-  private store = inject(Store);
+  readonly store = inject(Store);
   readonly actions = inject(Actions);
   readonly hh = hh;
   readonly dur = dur;
@@ -186,6 +187,13 @@ export class SleepPage {
     return diff(from, d.naps[i].start);
   }
 
+  /** Quem pôs para dormir / quem registrou o acordar */
+  quemNap(n: Nap) {
+    const a = this.store.quem(n.by);
+    const b = this.store.quem(n.endBy);
+    return !a || !b || a === b ? a || b : `${a} / ${b}`;
+  }
+
   go(n: number) {
     this.date.set(shiftDate(this.date(), n));
   }
@@ -217,7 +225,7 @@ export class SleepPage {
 
   addNap() {
     const at = this.next().at;
-    this.set((d) => d.naps.push({ start: at, end: fromMin(toMin(at) + 30) }));
+    this.set((d) => d.naps.push({ start: at, end: fromMin(toMin(at) + 30), by: this.store.uid() }));
   }
 
   removeNap(i: number) {

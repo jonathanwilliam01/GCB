@@ -67,7 +67,7 @@ const W = 360, H = 220, L = 38, R = 10, T = 12, B = 26;
         <div class="trow head"><span>Data</span><span>Peso</span><span>Altura</span><span>Cabeça</span><span></span></div>
         @for (r of rows(); track r.id) {
           <div class="trow">
-            <span>{{ br(r.date, false) }}<small class="muted">{{ r.age }}</small></span>
+            <span>{{ br(r.date, false) }}<small class="muted">{{ r.age }}</small>@if (store.quem(r.by); as q) { <small class="muted">{{ q }}</small> }</span>
             <span>{{ fmt(r.weight) }}<small [class]="sign(r.dw)">{{ delta(r.dw) }}</small></span>
             <span>{{ fmt(r.height) }}<small [class]="sign(r.dh)">{{ delta(r.dh) }}</small></span>
             <span>{{ fmt(r.head) }}<small [class]="sign(r.dc)">{{ delta(r.dc) }}</small></span>
@@ -79,7 +79,7 @@ const W = 360, H = 220, L = 38, R = 10, T = 12, B = 26;
   `,
 })
 export class GrowthPage {
-  private store = inject(Store);
+  readonly store = inject(Store);
   readonly metrics = METRICS;
   readonly br = br;
   readonly W = W;
@@ -181,7 +181,7 @@ export class GrowthPage {
   save() {
     const f = this.form;
     const num = (v: unknown) => (v === null || v === undefined || v === '' ? undefined : +v);
-    const m: Measure = { id: uid(), date: f.date || today(), weight: num(f.weight), height: num(f.height), head: num(f.head) };
+    const m: Measure = { id: uid(), date: f.date || today(), weight: num(f.weight), height: num(f.height), head: num(f.head), by: this.store.uid() };
     if (m.weight == null && m.height == null && m.head == null) return alert('Informe ao menos uma medida.');
     this.store.mutate((d) => d.measures.push(m));
     this.form = { date: today() };

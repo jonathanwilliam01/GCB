@@ -1,6 +1,16 @@
-export const VERSION = 'V1.26.10.07';
+export const VERSION = 'V1.26.10.08';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.08',
+    date: '2026-10-28',
+    items: [
+      'Seu nome para quem acompanha (ex.: Mamãe), mostrado nos registros que você fizer',
+      'Mostra quem registrou o acordar, cada soneca, o sono noturno, os alimentos e as medidas',
+      'Aviso na hora quando outra pessoa registra algo do dia (ex.: "Papai: 😴 dormiu 14h20")',
+      'Card próprio para excluir o bebê (dono) ou deixar de acompanhar, no fim da tela do bebê',
+    ],
+  },
   {
     version: 'V1.26.10.07',
     date: '2026-10-26',

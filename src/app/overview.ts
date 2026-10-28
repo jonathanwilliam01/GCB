@@ -51,7 +51,7 @@ type Go = 'sleep' | 'food' | 'growth' | 'tips' | 'profile';
     <div class="card" (click)="go.emit('food')">
       <div class="row between"><b>🥕 Alimentos hoje</b><small class="muted">{{ foods().length }}</small></div>
       @for (f of foods(); track f.id) {
-        <div class="row between item"><span>{{ icon(f.reaction) }} {{ f.food }}</span><small class="muted">{{ f.notes }}</small></div>
+        <div class="row between item"><span>{{ icon(f.reaction) }} {{ f.food }}</span><small class="muted">{{ f.notes }}@if (f.notes && store.quem(f.by)) { · }{{ store.quem(f.by) }}</small></div>
       } @empty {
         <p class="muted small">Nenhum registro hoje.</p>
       }
@@ -81,7 +81,7 @@ type Go = 'sleep' | 'food' | 'growth' | 'tips' | 'profile';
   `,
 })
 export class OverviewPage {
-  private store = inject(Store);
+  readonly store = inject(Store);
   readonly go = output<Go>();
   readonly br = br;
   readonly hh = hh;

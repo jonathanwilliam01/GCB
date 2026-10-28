@@ -1,5 +1,12 @@
 # Patch Notes
 
+## V1.26.10.08 (28/10/2026)
+
+- Seu nome para quem acompanha (ex.: Mamãe), mostrado nos registros que você fizer
+- Mostra quem registrou o acordar, cada soneca, o sono noturno, os alimentos e as medidas
+- Aviso na hora quando outra pessoa registra algo do dia (ex.: "Papai: 😴 dormiu 14h20")
+- Card próprio para excluir o bebê (dono) ou deixar de acompanhar, no fim da tela do bebê
+
 ## V1.26.10.07 (26/10/2026)
 
 - Login com e-mail e senha; dados salvos na conta (Supabase) em vez do navegador

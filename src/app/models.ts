@@ -32,9 +32,12 @@ export interface MealSlot {
   time?: string;
 }
 
+// by/endBy/wakeBy/nightBy = user_id de quem registrou
 export interface Nap {
   start: string;
   end?: string;
+  by?: string;
+  endBy?: string;
 }
 
 export interface SleepDay {
@@ -42,6 +45,8 @@ export interface SleepDay {
   windows: number[];
   naps: Nap[];
   night?: string;
+  wakeBy?: string;
+  nightBy?: string;
 }
 
 export interface FoodEntry {
@@ -50,6 +55,7 @@ export interface FoodEntry {
   food: string;
   reaction: Reaction;
   notes: string;
+  by?: string;
 }
 
 export interface Measure {
@@ -58,6 +64,7 @@ export interface Measure {
   weight?: number;
   height?: number;
   head?: number;
+  by?: string;
 }
 
 export interface Data {

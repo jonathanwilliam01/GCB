@@ -154,19 +154,19 @@ import { Baby, Crop, dur } from './models';
         <b class="big">{{ store.bebe()?.codigo }}</b>
         <button class="btn" (click)="copiar()">Copiar</button>
       </div>
+      <label>Seu nome para quem acompanha<input [(ngModel)]="apelido" placeholder="ex.: Mamãe" maxlength="30" (change)="salvarApelido()" /></label>
+      <p class="muted small">Aparece nos registros que você fizer.</p>
       <p class="sub">Quem acompanha</p>
       @for (m of store.membros(); track m.user_id) {
         <div class="row between item">
-          <span>{{ m.email || 'Sem e-mail' }}@if (m.papel === 'dono') { <small class="muted"> · dono</small> }</span>
+          <span>@if (m.apelido) { {{ m.apelido }} <small class="muted">· {{ m.email }}</small> } @else { {{ m.email || 'Sem e-mail' }} }@if (m.papel === 'dono') { <small class="muted"> · dono</small> }</span>
           @if (store.souDono() && m.user_id !== auth.user()?.id) { <button class="link danger" (click)="remover(m)">remover</button> }
         </div>
       }
-      <div class="row gap">
-        @if (store.souDono()) { <button class="link" (click)="novoCodigo()">gerar novo código</button> }
-        <button class="link danger" (click)="sairBebe()">deixar de acompanhar</button>
-        @if (store.souDono()) { <button class="link danger" (click)="sairBebe(true)">excluir bebê</button> }
-      </div>
-      <p class="muted small">ⓘ Novo código: o antigo para de funcionar. Se o dono sair, quem entrou primeiro vira dono; quando o último sair, os dados do bebê são apagados.</p>
+      @if (store.souDono()) {
+        <button class="link" (click)="novoCodigo()">gerar novo código</button>
+        <p class="muted small">ⓘ Novo código: o antigo para de funcionar.</p>
+      }
       <p class="sub">Conta</p>
       <div class="row between item">
         <span class="muted">{{ auth.user()?.email }}</span>
@@ -221,6 +221,16 @@ import { Baby, Crop, dur } from './models';
 
       <button class="link danger" (click)="store.clear(); reload()">apagar todos os dados</button>
     </div>
+
+    <div class="card">
+      <b>🗑 Remover bebê</b>
+      @if (store.souDono()) {
+        <p class="muted small">Excluir apaga o bebê e todos os registros para todos que acompanham. Não dá para desfazer.</p>
+        <button class="btn block danger" (click)="sairBebe(true)">Excluir {{ b.name || 'bebê' }}</button>
+      }
+      <p class="muted small">Deixar de acompanhar tira o bebê só da sua conta. Se o dono sair, quem entrou primeiro vira dono; quando o último sair, os dados são apagados.</p>
+      <button class="btn block ghost danger" (click)="sairBebe()">Deixar de acompanhar</button>
+    </div>
   `,
 })
 export class ProfilePage {
@@ -235,6 +245,7 @@ export class ProfilePage {
   appName = this.store.data().appName ?? '';
   readonly crop = signal('');
   readonly view = signal(false);
+  apelido = this.store.eu()?.apelido ?? '';
 
   @HostListener('document:keydown.escape')
   close() {
@@ -251,6 +262,15 @@ export class ProfilePage {
     navigator.clipboard?.writeText(this.store.bebe()!.codigo).then(() => this.store.notify('✓ Código copiado'));
   }
 
+  async salvarApelido() {
+    try {
+      await this.store.definirApelido(this.apelido.trim());
+      this.store.notify('✓ Nome salvo');
+    } catch (e) {
+      alert((e as Error).message);
+    }
+  }
+
   async novoCodigo() {
     if (!confirm('Gerar novo código? O atual para de funcionar.')) return;
     await this.store.novoCodigo().catch((e) => alert(e.message));
@@ -263,7 +283,7 @@ export class ProfilePage {
 
   async sairBebe(excluir = false) {
     const msg = excluir
-      ? 'Excluir o bebê e TODOS os dados para todos que acompanham?'
+      ? `Excluir ${this.b.name || 'o bebê'} e TODOS os dados para todos que acompanham? Não dá para desfazer.`
       : 'Deixar de acompanhar este bebê? Se ninguém mais acompanhar, os dados são apagados.';
     if (!confirm(msg)) return;
     await this.store.sairBebe(excluir).catch((e) => alert(e.message));

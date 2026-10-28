@@ -1,7 +1,7 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { Auth } from './auth';
-import { Baby, Data, emptyData, FoodEntry, Measure, SleepDay, today } from './models';
+import { Baby, Data, emptyData, FoodEntry, hh, Measure, SleepDay, today } from './models';
 import { q, supabase } from './supabase';
 
 // dados de antes do Supabase, para levar ao banco
@@ -24,6 +24,7 @@ export interface Membro {
   user_id: string;
   email: string;
   papel: 'dono' | 'membro';
+  apelido?: string;
 }
 
 interface Cache {
@@ -53,7 +54,10 @@ export class Store {
   readonly bebeId = signal<string | null>(null);
   readonly bebe = computed(() => this.bebes().find((b) => b.id === this.bebeId()) ?? null);
   readonly membros = signal<Membro[]>([]);
-  readonly souDono = computed(() => this.membros().find((m) => m.user_id === this.auth.user()?.id)?.papel === 'dono');
+  /** Usuário logado; vai em by nos registros */
+  readonly uid = computed(() => this.auth.user()?.id);
+  readonly eu = computed(() => this.membros().find((m) => m.user_id === this.uid()));
+  readonly souDono = computed(() => this.eu()?.papel === 'dono');
   /** Alterações feitas no aparelho e ainda não enviadas */
   readonly pendente = signal(false);
   /** Tela de criar ou entrar em outro bebê */
@@ -64,9 +68,10 @@ export class Store {
   private toastTimer?: ReturnType<typeof setTimeout>;
   private canal: RealtimeChannel | null = null;
   private timer?: ReturnType<typeof setTimeout>;
-  private uid = computed(() => this.auth.user()?.id ?? null);
   /** Último estado confirmado no banco; data() diferente dele = pendente */
   private base = this.data();
+  /** Bebê a que a base pertence; só avisa novidades depois da primeira carga dele */
+  private baseDe: string | null = null;
   private fila = Promise.resolve(true);
 
   constructor() {
@@ -130,6 +135,7 @@ export class Store {
     this.membros.set(c?.membros ?? []);
     this.base = c?.base ?? emptyData();
     this.data.set(c?.data ?? this.base);
+    this.baseDe = c?.bebeId ?? null;
     this.pendente.set(!!c?.data);
     this.assinar(this.bebeId());
     // com cópia local já abre; a busca no banco atualiza depois
@@ -158,6 +164,7 @@ export class Store {
   private async abrir(id: string | null) {
     this.bebeId.set(id);
     this.base = emptyData();
+    this.baseDe = null;
     this.data.set(this.base);
     this.membros.set([]);
     this.pendente.set(false);
@@ -198,6 +205,11 @@ export class Store {
     await this.atualizar();
   }
 
+  async definirApelido(apelido: string) {
+    await q(supabase.rpc('definir_apelido', { p_apelido: apelido }));
+    await this.carregar();
+  }
+
   async removerMembro(userId: string) {
     await q(supabase.rpc('remover_membro', { p_bebe: this.bebeId(), p_user: userId }));
     await this.carregar();
@@ -229,7 +241,7 @@ export class Store {
       q<{ colecao: Colecao; chave: string; dado: unknown }[]>(
         supabase.from('registros').select('colecao, chave, dado').eq('bebe_id', id).order('criado_em').order('chave'),
       ),
-      q<Membro[]>(supabase.from('bebe_membros').select('user_id, email, papel').eq('bebe_id', id).order('criado_em')),
+      q<Membro[]>(supabase.from('bebe_membros').select('user_id, email, papel, apelido').eq('bebe_id', id).order('criado_em')),
     ]);
     // trocou de bebê ou mexeu nos dados durante a busca: a recarga seguinte resolve
     if (id !== this.bebeId() || this.data() !== this.base) return;
@@ -241,9 +253,13 @@ export class Store {
       else if (r.colecao === 'foods') d.foods.push(r.dado as FoodEntry);
       else d.measures.push(r.dado as Measure);
     }
+    const antes = this.baseDe === id ? this.base : null;
     this.base = d;
+    this.baseDe = id;
     this.data.set(d);
     this.membros.set(membros);
+    const novas = antes ? this.novidades(antes, d) : [];
+    if (novas.length) this.notify(novas.join(' · '), 5000);
     this.bebes.update((l) => l.map((x) => (x.id === id ? { ...x, codigo: b.codigo, nome: d.baby.name } : x)));
     this.salvarCache();
   }
@@ -316,10 +332,40 @@ export class Store {
     this.canal = ch.subscribe();
   }
 
-  notify(msg: string) {
+  /** Nome de quem registrou; vazio se não há com quem compartilhar */
+  quem(by?: string) {
+    if (!by || this.membros().length < 2) return '';
+    if (by === this.uid()) return 'você';
+    const m = this.membros().find((x) => x.user_id === by);
+    return m ? m.apelido || m.email.split('@')[0] : '';
+  }
+
+  /** O que outra pessoa registrou hoje entre duas cargas */
+  private novidades(antes: Data, depois: Data) {
+    const out: string[] = [];
+    const add = (by: string | undefined, txt: string) => {
+      const nome = by !== this.uid() && this.quem(by);
+      if (nome) out.push(`${nome}: ${txt}`);
+    };
+    const a = antes.days[today()];
+    const d = depois.days[today()];
+    if (d) {
+      if (!a) add(d.wakeBy, `☀️ acordou ${hh(d.wake)}`);
+      d.naps.forEach((n, i) => {
+        if (!a?.naps[i]) add(n.by, `😴 dormiu ${hh(n.start)}`);
+        if (n.end && !a?.naps[i]?.end) add(n.endBy, `☀️ acordou ${hh(n.end)}`);
+      });
+      if (d.night && !a?.night) add(d.nightBy, `🌙 sono noturno ${hh(d.night)}`);
+    }
+    const ids = new Set(antes.foods.map((f) => f.id));
+    for (const f of depois.foods) if (!ids.has(f.id)) add(f.by, `🥕 ${f.food}`);
+    return out;
+  }
+
+  notify(msg: string, ms = 1600) {
     this.toast.set(msg);
     clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => this.toast.set(''), 1600);
+    this.toastTimer = setTimeout(() => this.toast.set(''), ms);
   }
 
   mutate(fn: (d: Data) => void, msg = '✓ Salvo automaticamente') {
