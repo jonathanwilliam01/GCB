@@ -1,6 +1,13 @@
-export const VERSION = 'V1.26.10.08';
+export const VERSION = 'V1.26.10.09';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.09',
+    date: '2026-10-28',
+    items: [
+      'Soneca complementar: registra o cochilo extra logo após uma soneca (botão "+ Complementar" ou tocando no número da soneca), e a próxima janela passa a contar do fim dele',
+    ],
+  },
   {
     version: 'V1.26.10.08',
     date: '2026-10-28',

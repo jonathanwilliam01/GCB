@@ -1,4 +1,4 @@
-import { Data, diff, nowHM, Reaction, shiftDate, today, toMin } from './models';
+import { Data, diff, mainNaps, nowHM, Reaction, shiftDate, today, toMin } from './models';
 
 // eixo do diário de sono: 05:00 até 05:00 do dia seguinte
 const BASE = 300;
@@ -56,7 +56,7 @@ export const dayStats = (data: Data, date: string): DayStats | null => {
     date,
     wake: day.wake,
     night: day.night,
-    naps: day.naps.length,
+    naps: mainNaps(day.naps).length,
     napMin: ended.reduce((s, n) => s + diff(n.start, n.end!), 0),
     nightMin: day.night && next ? diff(day.night, next.wake) : null,
   };
@@ -123,12 +123,13 @@ export const windowAnalysis = (data: Data, dates: string[]): WindowRow[] => {
     const d = data.days[date];
     if (!d) continue;
     let start: string | undefined = d.wake;
-    d.naps.forEach((n, i) => {
+    const main = mainNaps(d.naps);
+    main.forEach((n, i) => {
       if (start && i < last) real[i].push(diff(start, n.start));
       if (n.end && i < last) naps[i].push(diff(n.start, n.end));
       start = n.end;
     });
-    if (d.night && start && d.naps.length === last) real[last].push(diff(start, d.night));
+    if (d.night && start && main.length === last) real[last].push(diff(start, d.night));
   }
   return plan.map((p, i) => {
     const r = avg(real[i]);

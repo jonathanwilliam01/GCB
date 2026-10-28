@@ -38,6 +38,7 @@ export interface Nap {
   end?: string;
   by?: string;
   endBy?: string;
+  extra?: boolean; // complementar: emenda na soneca anterior, não consome janela
 }
 
 export interface SleepDay {
@@ -106,6 +107,15 @@ export const fromMin = (m: number) => {
 };
 
 // minutos de a até b, atravessando meia-noite
+// sonecas que consomem janela, com a complementar emendada no fim da anterior
+export const mainNaps = (naps: Nap[]) =>
+  naps.reduce<Nap[]>((out, n) => {
+    const prev = out.at(-1);
+    if (n.extra && prev) out[out.length - 1] = { ...prev, end: n.end };
+    else out.push(n);
+    return out;
+  }, []);
+
 export const diff = (a: string, b: string) => (toMin(b) - toMin(a) + 1440) % 1440;
 
 // minutos decorridos de a até agora; negativo se a ainda não chegou

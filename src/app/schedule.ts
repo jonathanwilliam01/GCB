@@ -1,4 +1,4 @@
-import { ageMonths, Data, MealSlot, SleepDay, toMin } from './models';
+import { ageMonths, Data, mainNaps, MealSlot, SleepDay, toMin } from './models';
 
 export interface AwakeWindow {
   start: number;
@@ -47,20 +47,21 @@ const napAvg = (data: Data, date: string, i: number) => {
     .filter(([d]) => d < date)
     .sort(([a], [b]) => b.localeCompare(a))
     .slice(0, 7)
-    .map(([, d]) => d.naps[i])
+    .map(([, d]) => mainNaps(d.naps)[i])
     .filter((n) => n?.end)
     .map((n) => after(toMin(n.start), toMin(n.end!)) - toMin(n.start));
   return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : i === 0 ? 60 : 45;
 };
 
 export const awakeWindows = (data: Data, date: string, day: SleepDay): AwakeWindow[] => {
-  const n = Math.max(day.windows.length, day.naps.length + 1);
+  const naps = mainNaps(day.naps);
+  const n = Math.max(day.windows.length, naps.length + 1);
   const out: AwakeWindow[] = [];
   let start = toMin(day.wake);
   let startPred = false;
   for (let i = 0; i < n; i++) {
     const plan = day.windows[Math.min(i, day.windows.length - 1)];
-    const nap = day.naps[i];
+    const nap = naps[i];
     let end = start + plan;
     let endPred = true;
     if (nap) [end, endPred] = [after(start, toMin(nap.start)), false];

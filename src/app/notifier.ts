@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Store } from './store';
-import { dur, fromMin, hh, nowHM, today, toMin } from './models';
+import { dur, fromMin, hh, mainNaps, nowHM, today, toMin } from './models';
 import { awakeWindows, dayMeals } from './schedule';
 
 // tempos em minutos; 0 = desligado
@@ -93,16 +93,17 @@ export class Notifier {
     if (day.night) return out;
 
     const wins = awakeWindows(data, date, day);
-    const last = day.naps.at(-1);
+    const naps = mainNaps(day.naps);
+    const last = naps.at(-1);
     if (!last || last.end) {
-      const idx = day.naps.length;
+      const idx = naps.length;
       const end = wins[idx].end;
       const what = idx >= day.windows.length - 1 ? 'sono noturno' : `soneca ${idx + 1}`;
       if (s.before) out.push({ key: `pre-${idx}-${end}`, at: end - s.before, grace: s.before, title: `😴 ${what} em ${s.before} min`, body: `${name} deve dormir às ${hh(fromMin(end))}.` });
       if (s.end) out.push({ key: `end-${idx}-${end}`, at: end, grace: 10, title: `😴 Hora do ${what}`, body: `A janela de vigília de ${name} terminou.`, act: 'sleep' });
       if (s.late) out.push({ key: `late-${idx}-${end}`, at: end + s.late, grace: 60, title: `⏰ Janela passou ${s.late} min`, body: `${name} continua ${awake}. Cansaço demais dificulta o sono.`, act: 'sleep' });
     } else if (s.napMax) {
-      const idx = day.naps.length - 1;
+      const idx = naps.length - 1;
       const start = wins[idx].end;
       out.push({ key: `nap-${idx}-${start}`, at: start + s.napMax, grace: 60, title: `💤 Soneca de ${dur(s.napMax)}`, body: `${name} dorme desde ${hh(last.start)}. Avalie acordar ou registre se já acordou.`, act: 'wake' });
     }

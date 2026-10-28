@@ -1,5 +1,9 @@
 # Patch Notes
 
+## V1.26.10.09 (28/10/2026)
+
+- Soneca complementar: registra o cochilo extra logo após uma soneca (botão "+ Complementar" ou tocando no número da soneca), e a próxima janela passa a contar do fim dele
+
 ## V1.26.10.08 (28/10/2026)
 
 - Seu nome para quem acompanha (ex.: Mamãe), mostrado nos registros que você fizer

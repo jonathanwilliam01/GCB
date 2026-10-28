@@ -2,7 +2,7 @@
 
 # GCB - Gestão e Controle do Bebê
 
-Versão atual: **V1.26.10.07** · [Patch notes](PATCH_NOTES.md)
+Versão atual: **V1.26.10.09** · [Patch notes](PATCH_NOTES.md)
 
 Angular + Supabase (login, dados e compartilhamento), deploy na Vercel.
 

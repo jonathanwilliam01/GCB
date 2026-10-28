@@ -5,7 +5,7 @@ import { MealsCard } from './meals';
 import { Store } from './store';
 import { Actions } from './actions';
 import { sleepTip } from './tips';
-import { ageMonths, ageText, br, diff, dur, fromMin, hh, Nap, nowHM, shiftDate, since, SleepDay, today, toMin } from './models';
+import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, shiftDate, since, SleepDay, today, toMin } from './models';
 
 @Component({
   selector: 'app-sleep',
@@ -88,15 +88,18 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, Nap, nowHM, shiftDate, 
         </div>
         @for (n of d.naps; track $index; let i = $index) {
           <div class="nap">
-            <span class="num">{{ i + 1 }}</span>
+            <button class="num" [disabled]="!i" title="Marcar/desmarcar como complementar" (click)="toggleExtra(i)">{{ n.extra ? '+' : winIdx(i) + 1 }}</button>
             <input mask="time" [ngModel]="n.start" (ngModelChange)="$event && set(x => x.naps[i].start = $event)" />
             <span>a</span>
             <input mask="time" [ngModel]="n.end" (ngModelChange)="set(x => x.naps[i].end = $event || undefined)" />
             <span class="dur">{{ n.end ? dur(diff(n.start, n.end)) : '…' }}</span>
             <button class="icon danger" (click)="removeNap(i)">×</button>
             <small class="muted full">
-              acordado {{ dur(awake(i)) }} de {{ dur(winAt(i)) }}
-              @if (awake(i) - winAt(i); as dlt) { ({{ dlt > 0 ? '+' : '−' }}{{ dur(abs(dlt)) }}) }
+              @if (n.extra && i) { complementar da soneca {{ winIdx(i) + 1 }} · acordado {{ dur(awake(i)) }} }
+              @else {
+                acordado {{ dur(awake(i)) }} de {{ dur(winAt(winIdx(i))) }}
+                @if (awake(i) - winAt(winIdx(i)); as dlt) { ({{ dlt > 0 ? '+' : '−' }}{{ dur(abs(dlt)) }}) }
+              }
               @if (quemNap(n); as q) { · {{ q }} }
             </small>
           </div>
@@ -105,6 +108,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, Nap, nowHM, shiftDate, 
         }
         <div class="row gap">
           <button class="btn ghost" (click)="addNap()">+ Soneca manual</button>
+          @if (lastNap()?.end) { <button class="btn ghost" (click)="addExtra()">+ Complementar</button> }
           @if (d.night) {
             <span class="muted">noite</span>
             <input mask="time" [ngModel]="d.night" (ngModelChange)="set(x => x.night = $event || undefined)" />
@@ -153,12 +157,13 @@ export class SleepPage {
   sleeping = computed(() => !!this.lastNap() && !this.lastNap()!.end && !this.day()!.night);
   cur = computed(() => {
     const d = this.day()!;
-    return d.night ? d.windows.length : Math.min(d.naps.length - (this.sleeping() ? 1 : 0), d.windows.length - 1);
+    return d.night ? d.windows.length : Math.min(mainNaps(d.naps).length - (this.sleeping() ? 1 : 0), d.windows.length - 1);
   });
   next = computed(() => {
     const d = this.day()!;
-    const n = d.naps.length;
-    const from = n ? d.naps[n - 1].end ?? d.naps[n - 1].start : d.wake;
+    const naps = mainNaps(d.naps);
+    const n = naps.length;
+    const from = n ? naps[n - 1].end ?? naps[n - 1].start : d.wake;
     const window = this.winAt(n);
     const night = n >= d.windows.length - 1;
     return { from, window, night, at: fromMin(toMin(from) + window), label: night ? 'sono noturno' : `soneca ${n + 1}` };
@@ -179,6 +184,11 @@ export class SleepPage {
   winAt(i: number) {
     const w = this.day()!.windows;
     return w[Math.min(i, w.length - 1)];
+  }
+
+  // janela a que a soneca i pertence (complementar conta na anterior)
+  winIdx(i: number) {
+    return mainNaps(this.day()!.naps.slice(0, i + 1)).length - 1;
   }
 
   awake(i: number) {
@@ -228,6 +238,15 @@ export class SleepPage {
     this.set((d) => d.naps.push({ start: at, end: fromMin(toMin(at) + 30), by: this.store.uid() }));
   }
 
+  addExtra() {
+    const from = this.lastNap()!.end!;
+    this.set((d) => d.naps.push({ start: from, end: fromMin(toMin(from) + 15), extra: true, by: this.store.uid() }));
+  }
+
+  toggleExtra(i: number) {
+    this.set((d) => (d.naps[i].extra = !d.naps[i].extra || undefined));
+  }
+
   removeNap(i: number) {
     if (confirm(`Remover soneca ${i + 1}?`)) this.set((d) => d.naps.splice(i, 1));
   }
@@ -245,7 +264,7 @@ export class SleepPage {
       'Janelas:',
       ...d.windows.map((w, i) => `${i + 1}- janela de ${dur(w)}${i === last ? ' (sono noturno)' : ''}`),
       '',
-      ...d.naps.map((n, i) => `${i + 1}- ${hh(n.start)} a ${n.end ? `${hh(n.end)} (${dur(diff(n.start, n.end))})` : '...'}`),
+      ...d.naps.map((n, i) => `${n.extra && i ? '+' : this.winIdx(i) + 1}- ${hh(n.start)} a ${n.end ? `${hh(n.end)} (${dur(diff(n.start, n.end))})` : '...'}`),
     ];
     if (d.night) lines.push(`🌙 Sono noturno ${hh(d.night)}`);
     else if (!this.sleeping()) lines.push('', `Próxima: ${this.next().label} ~${hh(this.next().at)}`);

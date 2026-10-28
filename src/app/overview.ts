@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { Store } from './store';
-import { ageMonths, br, dur, fromMin, hh, nowHM, REACTIONS, shiftDate, today, toMin } from './models';
+import { ageMonths, br, dur, fromMin, hh, mainNaps, nowHM, REACTIONS, shiftDate, today, toMin } from './models';
 import { awakeWindows, dayMeals } from './schedule';
 import { dayStats } from './reports';
 import { sleepTip } from './tips';
@@ -118,9 +118,9 @@ export class OverviewPage {
     const last = d.naps.at(-1);
     const since = (t: string) => dur(Math.max(0, this.nowMin() - toMin(t)));
     if (d.night) return { sleeping: true, title: `🌙 Sono noturno desde ${hh(d.night)}`, sub: `Sono diurno total ${dur(this.stats()!.napMin)}` };
-    if (last && !last.end) return { sleeping: true, title: `😴 Dormindo há ${since(last.start)}`, sub: `Soneca ${d.naps.length} desde ${hh(last.start)}` };
+    if (last && !last.end) return { sleeping: true, title: `😴 Dormindo há ${since(last.start)}`, sub: `Soneca ${mainNaps(d.naps).length} desde ${hh(last.start)}` };
     const wins = awakeWindows(this.data(), this.date, d);
-    const idx = d.naps.length;
+    const idx = mainNaps(d.naps).length;
     const next = wins[idx];
     const night = idx >= d.windows.length - 1;
     const left = Math.round(next.end - this.nowMin());
