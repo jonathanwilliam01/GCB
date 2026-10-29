@@ -1,6 +1,13 @@
-export const VERSION = 'V1.26.10.09';
+export const VERSION = 'V1.26.10.10';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.10.10',
+    date: '2026-10-29',
+    items: [
+      'Remover ou adicionar soneca só no dia: × na janela ainda não usada e + antes do sono noturno (ex.: acordou mais tarde e fará uma soneca a menos)',
+    ],
+  },
   {
     version: 'V1.26.10.09',
     date: '2026-10-28',

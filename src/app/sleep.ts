@@ -37,10 +37,12 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, s
         </div>
         <div class="chips">
           @for (w of d.windows; track $index) {
-            <span class="chip" [class.on]="$index === cur()" [class.done]="$index < cur()">
+            <span class="chip" [class.on]="$index === cur()" [class.done]="$index < cur()" [class.edit]="canRemoveWin($index)">
               {{ $index + 1 }}· {{ dur(w) }}{{ $index === d.windows.length - 1 ? ' 🌙' : '' }}
+              @if (canRemoveWin($index)) { <button class="icon" title="Remover soneca do dia" (click)="removeWin($index)">×</button> }
             </span>
           }
+          @if (!d.night) { <button class="chip add" title="Mais uma soneca no dia" (click)="addWin()">+</button> }
         </div>
       </div>
 
@@ -219,6 +221,20 @@ export class SleepPage {
   applyTip() {
     const w = [...this.tip()!.windows];
     this.set((d) => (d.windows = w));
+  }
+
+  // só janelas de soneca ainda não usadas (a última é a do sono noturno)
+  canRemoveWin(i: number) {
+    const d = this.day()!;
+    return !d.night && i < d.windows.length - 1 && i >= mainNaps(d.naps).length;
+  }
+
+  removeWin(i: number) {
+    if (confirm('Remover uma soneca deste dia?')) this.set((d) => d.windows.splice(i, 1));
+  }
+
+  addWin() {
+    this.set((d) => d.windows.splice(-1, 0, d.windows.at(-2) ?? d.windows[0]));
   }
 
   sleepNow() {

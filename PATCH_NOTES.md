@@ -1,5 +1,9 @@
 # Patch Notes
 
+## V1.26.10.10 (29/10/2026)
+
+- Remover ou adicionar soneca só no dia: × na janela ainda não usada e + antes do sono noturno (ex.: acordou mais tarde e fará uma soneca a menos)
+
 ## V1.26.10.09 (28/10/2026)
 
 - Soneca complementar: registra o cochilo extra logo após uma soneca (botão "+ Complementar" ou tocando no número da soneca), e a próxima janela passa a contar do fim dele
