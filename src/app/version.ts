@@ -1,6 +1,15 @@
-export const VERSION = 'V1.26.10.10';
+export const VERSION = 'V1.26.11.01';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.11.01',
+    date: '2026-11-09',
+    items: [
+      'Lembretes chegam mesmo com o app fechado (push), inclusive quando outra pessoa registra o sono',
+      'Data das medidas: tocar no campo seleciona a data para redigitar, e corrigir um dígito no meio não embaralha o resto',
+      'Dias anteriores: a hora que acordou começa vazia e "Dormiu/Acordou" usam o horário previsto em vez da hora atual',
+    ],
+  },
   {
     version: 'V1.26.10.10',
     date: '2026-10-29',

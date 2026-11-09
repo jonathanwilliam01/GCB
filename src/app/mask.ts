@@ -4,12 +4,13 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 type Kind = 'time' | 'date' | 'dur' | 'int' | 'decimal';
 
 const PLACEHOLDER: Partial<Record<Kind, string>> = { time: '00:00', date: 'dd/mm/aaaa', dur: '0h00' };
+const MAX: Partial<Record<Kind, number>> = { time: 4, date: 8 };
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Máscara para input texto. Modelo: time "HH:MM", date "AAAA-MM-DD", dur minutos, int/decimal número. */
 @Directive({
   selector: 'input[mask]',
-  host: { autocomplete: 'off', '(input)': 'onInput()', '(blur)': 'onBlur()' },
+  host: { autocomplete: 'off', '(input)': 'onInput()', '(blur)': 'onBlur()', '(focus)': 'onFocus()' },
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => Mask), multi: true }],
 })
 export class Mask implements ControlValueAccessor, OnInit {
@@ -45,9 +46,29 @@ export class Mask implements ControlValueAccessor, OnInit {
     this.el.disabled = d;
   }
 
+  // data preenchida: tocar seleciona tudo para redigitar
+  onFocus() {
+    if (this.mask() === 'date') setTimeout(() => this.el === document.activeElement && this.el.select());
+  }
+
   onInput() {
-    const { text, value, done } = this.parse(this.el.value);
+    const max = MAX[this.mask()];
+    let raw = this.el.value;
+    const pos = this.el.selectionStart ?? raw.length;
+    const mid = !!max && pos < raw.length;
+    // editando no meio de campo cheio: sobrescreve o dígito seguinte em vez de empurrar os demais
+    if (max && mid && raw.replace(/\D/g, '').length > max) {
+      const i = raw.slice(pos).search(/\d/);
+      if (i >= 0) raw = raw.slice(0, pos) + raw.slice(pos + i + 1);
+    }
+    const { text, value, done } = this.parse(raw);
     this.el.value = text;
+    if (mid) {
+      let n = raw.slice(0, pos).replace(/\D/g, '').length;
+      let c = 0;
+      while (n && c < text.length) if (/\d/.test(text[c++])) n--;
+      this.el.setSelectionRange(c, c);
+    }
     if (done) this.emit(value);
   }
 

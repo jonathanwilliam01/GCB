@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Mask } from './mask';
 import { MealsCard } from './meals';
@@ -138,8 +138,9 @@ export class SleepPage {
   date = signal(today());
   now = signal(nowHM());
   copied = signal(false);
-  wakeInput = nowHM();
+  wakeInput = '';
 
+  isToday = computed(() => this.date() === this.todayIso());
   name = computed(() => this.store.data().baby.name || 'o bebê');
   day = computed(() => this.store.data().days[this.date()]);
   dateLabel = computed(() => {
@@ -181,6 +182,8 @@ export class SleepPage {
       this.todayIso.set(today());
     }, 20000);
     inject(DestroyRef).onDestroy(() => clearInterval(t));
+    // hora atual só como sugestão de hoje; outro dia começa vazio
+    effect(() => (this.wakeInput = this.isToday() ? nowHM() : ''));
   }
 
   winAt(i: number) {
@@ -215,6 +218,7 @@ export class SleepPage {
   }
 
   start() {
+    if (!this.wakeInput && !this.isToday()) return alert('Informe a hora que acordou.');
     this.actions.startDay(this.date(), this.wakeInput || nowHM());
   }
 
@@ -237,16 +241,17 @@ export class SleepPage {
     this.set((d) => d.windows.splice(-1, 0, d.windows.at(-2) ?? d.windows[0]));
   }
 
+  // outro dia: horário previsto no lugar do atual, para ajustar depois
   sleepNow() {
-    this.actions.sleep(this.date());
+    this.actions.sleep(this.date(), this.isToday() ? undefined : this.next().at);
   }
 
   wakeNow() {
-    this.actions.wake(this.date());
+    this.actions.wake(this.date(), this.isToday() ? undefined : fromMin(toMin(this.lastNap()!.start) + 60));
   }
 
   nightNow() {
-    this.actions.night(this.date());
+    this.actions.night(this.date(), this.isToday() ? undefined : this.next().at);
   }
 
   addNap() {

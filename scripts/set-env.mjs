@@ -11,6 +11,8 @@ if (existsSync('.env')) {
 const env = (...nomes) => nomes.map((n) => process.env[n]).find(Boolean) ?? '';
 const url = env('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
 const key = env('SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_PUBLISHABLE_KEY', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+// chave pública VAPID do push (a privada fica só nos secrets da edge function)
+const vapidKey = env('VAPID_PUBLIC_KEY');
 if (!url || !key) {
   console.warn('⚠ SUPABASE_URL / SUPABASE_ANON_KEY não definidos');
   // na Vercel não publica um app sem banco
@@ -20,5 +22,5 @@ if (!url || !key) {
 mkdirSync('src/environments', { recursive: true });
 writeFileSync(
   'src/environments/environment.ts',
-  `export const environment = ${JSON.stringify({ supabaseUrl: url, supabaseKey: key }, null, 2)};\n`,
+  `export const environment = ${JSON.stringify({ supabaseUrl: url, supabaseKey: key, vapidKey }, null, 2)};\n`,
 );

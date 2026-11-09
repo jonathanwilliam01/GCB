@@ -1,5 +1,11 @@
 # Patch Notes
 
+## V1.26.11.01 (09/11/2026)
+
+- Lembretes chegam mesmo com o app fechado (push), inclusive quando outra pessoa registra o sono
+- Data das medidas: tocar no campo seleciona a data para redigitar, e corrigir um dígito no meio não embaralha o resto
+- Dias anteriores: a hora que acordou começa vazia e "Dormiu/Acordou" usam o horário previsto em vez da hora atual
+
 ## V1.26.10.10 (29/10/2026)
 
 - Remover ou adicionar soneca só no dia: × na janela ainda não usada e + antes do sono noturno (ex.: acordou mais tarde e fará uma soneca a menos)

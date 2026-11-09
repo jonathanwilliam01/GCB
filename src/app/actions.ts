@@ -24,18 +24,15 @@ export class Actions {
     this.store.mutate((d) => (d.days[date] = { wake, windows, naps: [], wakeBy: this.store.uid() }), `☀️ Acordou ${hh(wake)}`);
   }
 
-  sleep(date = today()) {
-    const t = nowHM();
+  sleep(date = today(), t = nowHM()) {
     this.store.mutate((d) => d.days[date].naps.push({ start: t, by: this.store.uid() }), `😴 Dormiu ${hh(t)}`);
   }
 
-  wake(date = today()) {
-    const t = nowHM();
+  wake(date = today(), t = nowHM()) {
     this.store.mutate((d) => Object.assign(d.days[date].naps.at(-1)!, { end: t, endBy: this.store.uid() }), `☀️ Acordou ${hh(t)}`);
   }
 
-  night(date = today()) {
-    const t = nowHM();
+  night(date = today(), t = nowHM()) {
     this.store.mutate((d) => Object.assign(d.days[date], { night: t, nightBy: this.store.uid() }), `🌙 Sono noturno ${hh(t)}`);
   }
 

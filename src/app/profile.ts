@@ -129,7 +129,11 @@ import { Baby, Crop, dur } from './models';
           <p class="danger small">Notificações bloqueadas no navegador. Libere nas configurações do site.</p>
         }
         <button class="btn ghost" (click)="notifier.test()">Testar aviso</button>
-        <p class="muted small">ⓘ Os avisos funcionam com o app aberto ou em segundo plano. Com o app fechado o sistema pode não avisar.</p>
+        @if (notifier.push()) {
+          <p class="muted small">ⓘ Avisos chegam mesmo com o app fechado. No iPhone, só com o app instalado na tela inicial.</p>
+        } @else {
+          <p class="muted small">ⓘ Os avisos funcionam com o app aberto ou em segundo plano. Com o app fechado o sistema pode não avisar.</p>
+        }
       }
     </div>
 
