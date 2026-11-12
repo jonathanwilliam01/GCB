@@ -125,6 +125,10 @@ import { Baby, Crop, dur } from './models';
             @for (h of [6, 7, 8, 9, 10]; track h) { <option [ngValue]="h * 60">às {{ h }}h</option> }
           </select>
         </div>
+        <div class="opt">
+          <span>Quando outra pessoa registrar dormiu/acordou</span>
+          <input type="checkbox" [checked]="n.events" (change)="notifier.update({ events: $any($event.target).checked })" />
+        </div>
         @if (notifier.permission() === 'denied') {
           <p class="danger small">Notificações bloqueadas no navegador. Libere nas configurações do site.</p>
         }

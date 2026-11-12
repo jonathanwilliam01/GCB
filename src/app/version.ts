@@ -1,6 +1,15 @@
-export const VERSION = 'V1.26.11.01';
+export const VERSION = 'V1.26.11.02';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.11.02',
+    date: '2026-11-12',
+    items: [
+      'Lembretes push chegando no celular com o app fechado (antes só chegavam no computador)',
+      'Notificação na hora quando outra pessoa registra que o bebê dormiu ou acordou (pode desligar em Lembretes)',
+      'App instalado na tela inicial usa o nome personalizado',
+    ],
+  },
   {
     version: 'V1.26.11.01',
     date: '2026-11-09',

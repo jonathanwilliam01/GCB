@@ -29,7 +29,6 @@ const read = (k: string) => {
 };
 
 const DEFAULT_TITLE = 'GCB - Gestão e Controle do Bebê';
-const DEFAULT_MANIFEST = document.querySelector('link[rel=manifest]')?.getAttribute('href') ?? '';
 
 // título da aba, nome no iOS e manifest com o nome personalizado
 const brand = (name: string, custom: boolean) => {
@@ -38,19 +37,9 @@ const brand = (name: string, custom: boolean) => {
   try {
     localStorage.setItem('gcb:appName', custom ? name : '');
   } catch {}
-  const link = document.querySelector('link[rel=manifest]');
-  if (!link) return;
-  if (!custom) return link.setAttribute('href', DEFAULT_MANIFEST);
-  const abs = (u: string) => new URL(u, document.baseURI).href;
-  fetch(DEFAULT_MANIFEST)
-    .then((r) => r.json())
-    .then((m) => {
-      m.id = m.start_url = m.scope = abs('./');
-      m.name = m.short_name = name;
-      m.icons = m.icons.map((i: { src: string }) => ({ ...i, src: abs(i.src) }));
-      link.setAttribute('href', 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m)));
-    })
-    .catch(() => {});
+  document
+    .querySelector('link[rel=manifest]')
+    ?.setAttribute('href', custom ? 'api/manifest?n=' + encodeURIComponent(name) : 'manifest.webmanifest');
 };
 
 @Component({

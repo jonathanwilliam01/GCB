@@ -16,6 +16,8 @@ export interface NotifySettings {
   napMax: number;
   meals: boolean;
   wakeBy: number;
+  /** Aviso quando outra pessoa registra que dormiu/acordou */
+  events: boolean;
 }
 
 // grace: minutos depois de "at" em que o aviso ainda vale (app reaberto atrasado)
@@ -32,7 +34,7 @@ export type Act = 'day' | 'sleep' | 'wake';
 
 const KEY = 'gcb:notify';
 const FIRED = 'gcb:fired';
-const DEFAULTS: NotifySettings = { on: false, before: 15, end: true, late: 20, napMax: 150, meals: true, wakeBy: 0 };
+const DEFAULTS: NotifySettings = { on: false, before: 15, end: true, late: 20, napMax: 150, meals: true, wakeBy: 0, events: true };
 
 /** Lembretes do dia; at em minutos desde 00:00 de date (passa de 1440 depois da meia-noite) */
 function reminders(data: Data, date: string, s: NotifySettings): Reminder[] {
@@ -157,6 +159,13 @@ export class Notifier {
     } catch (e) {
       console.warn('agenda push', e);
     }
+  }
+
+  /** Push imediato para os outros aparelhos do bebê */
+  async evento(title: string, body: string) {
+    const bebe = this.store.bebeId();
+    if (!bebe || !this.store.uid()) return;
+    await q(supabase.rpc('push_evento', { p_bebe: bebe, p_titulo: title, p_corpo: body })).catch((e) => console.warn('push evento', e));
   }
 
   private load(): NotifySettings {

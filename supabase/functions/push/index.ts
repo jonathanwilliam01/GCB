@@ -23,17 +23,19 @@ Deno.serve(async (req) => {
   await Promise.all(
     (data as Pendente[]).map(async (p) => {
       // formato do service worker do Angular; tag sem a data, igual à do aviso local, para não duplicar
+      // urgency high: sem isso o Android segura o push em economia de bateria
       const notification = {
         title: p.titulo,
         body: p.corpo,
-        tag: p.chave.slice(11),
+        tag: p.chave.slice(11).startsWith('ev-') ? 'evento' : p.chave.slice(11),
+        renotify: true,
         icon: '/icons/icon-192.png',
         badge: '/icons/icon-192.png',
         vibrate: [200, 100, 200],
         data: { onActionClick: { default: { operation: 'focusLastFocusedOrOpen', url: '/' } } },
       };
       try {
-        await webpush.sendNotification({ endpoint: p.endpoint, keys: { p256dh: p.p256dh, auth: p.auth } }, JSON.stringify({ notification }), { TTL: 900 });
+        await webpush.sendNotification({ endpoint: p.endpoint, keys: { p256dh: p.p256dh, auth: p.auth } }, JSON.stringify({ notification }), { TTL: 900, urgency: 'high' });
         enviados++;
       } catch (e) {
         // inscrição expirada ou removida no aparelho

@@ -20,6 +20,8 @@
         const n = localStorage.getItem('gcb:appName');
         if (n) {
           document.title = n;
+          document.querySelector('meta[name=apple-mobile-web-app-title]').content = n;
+          document.querySelector('link[rel=manifest]').href = 'api/manifest?n=' + encodeURIComponent(n);
           addEventListener('DOMContentLoaded', () => (document.getElementById('splash-name').textContent = n));
         }
       } catch {}

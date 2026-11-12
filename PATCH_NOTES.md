@@ -1,5 +1,11 @@
 # Patch Notes
 
+## V1.26.11.02 (12/11/2026)
+
+- Lembretes push chegando no celular com o app fechado (antes só chegavam no computador)
+- Notificação na hora quando outra pessoa registra que o bebê dormiu ou acordou (pode desligar em Lembretes)
+- App instalado na tela inicial usa o nome personalizado
+
 ## V1.26.11.01 (09/11/2026)
 
 - Lembretes chegam mesmo com o app fechado (push), inclusive quando outra pessoa registra o sono

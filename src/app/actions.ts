@@ -1,6 +1,7 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { Store } from './store';
-import { FoodEntry, hh, nowHM, today, uid } from './models';
+import { Notifier } from './notifier';
+import { FoodEntry, hh, nowHM, toMin, today, uid } from './models';
 
 export type SleepState = 'noday' | 'awake' | 'nap' | 'night';
 
@@ -8,6 +9,15 @@ export type SleepState = 'noday' | 'awake' | 'nap' | 'night';
 @Injectable({ providedIn: 'root' })
 export class Actions {
   private store = inject(Store);
+  private notifier = inject(Notifier);
+
+  // só avisa registro do momento, não correção de horário antigo
+  private avisar(date: string, t: string, emoji: string, verbo: string) {
+    if (date !== today() || Math.abs(toMin(nowHM()) - toMin(t)) > 30) return;
+    const m = this.store.eu();
+    const quem = m ? m.apelido || m.email.split('@')[0] : '';
+    this.notifier.evento(`${emoji} ${this.store.data().baby.name || 'O bebê'} ${verbo}`, `Às ${hh(t)}${quem ? ` · registrado por ${quem}` : ''}`);
+  }
 
   state = computed<SleepState>(() => this.stateOf(today()));
 
@@ -22,18 +32,22 @@ export class Actions {
   startDay(date = today(), wake = nowHM()) {
     const windows = [...this.store.data().baby.windows];
     this.store.mutate((d) => (d.days[date] = { wake, windows, naps: [], wakeBy: this.store.uid() }), `☀️ Acordou ${hh(wake)}`);
+    this.avisar(date, wake, '☀️', 'acordou');
   }
 
   sleep(date = today(), t = nowHM()) {
     this.store.mutate((d) => d.days[date].naps.push({ start: t, by: this.store.uid() }), `😴 Dormiu ${hh(t)}`);
+    this.avisar(date, t, '😴', 'dormiu');
   }
 
   wake(date = today(), t = nowHM()) {
     this.store.mutate((d) => Object.assign(d.days[date].naps.at(-1)!, { end: t, endBy: this.store.uid() }), `☀️ Acordou ${hh(t)}`);
+    this.avisar(date, t, '☀️', 'acordou');
   }
 
   night(date = today(), t = nowHM()) {
     this.store.mutate((d) => Object.assign(d.days[date], { night: t, nightBy: this.store.uid() }), `🌙 Sono noturno ${hh(t)}`);
+    this.avisar(date, t, '🌙', 'dormiu (sono noturno)');
   }
 
   undoNight(date = today()) {
