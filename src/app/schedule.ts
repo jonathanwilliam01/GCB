@@ -42,7 +42,7 @@ export const suggestMeals = (months: number, n: number): MealSlot[] => {
 };
 
 // duração média da soneca i nos últimos 7 dias
-const napAvg = (data: Data, date: string, i: number) => {
+export const napAvg = (data: Data, date: string, i: number) => {
   const vals = Object.entries(data.days)
     .filter(([d]) => d < date)
     .sort(([a], [b]) => b.localeCompare(a))
@@ -53,22 +53,26 @@ const napAvg = (data: Data, date: string, i: number) => {
   return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : i === 0 ? 60 : 45;
 };
 
-export const awakeWindows = (data: Data, date: string, day: SleepDay): AwakeWindow[] => {
+export const napLen = (data: Data, date: string, day: SleepDay, i: number) => day.napLen?.[i] || napAvg(data, date, i);
+
+// now (HH:MM): previsão que já passou fica no horário atual
+export const awakeWindows = (data: Data, date: string, day: SleepDay, now?: string): AwakeWindow[] => {
   const naps = mainNaps(day.naps);
   const n = Math.max(day.windows.length, naps.length + 1);
   const out: AwakeWindow[] = [];
   let start = toMin(day.wake);
   let startPred = false;
+  const atLeast = (m: number) => (now && !day.night ? Math.max(m, after(toMin(day.wake), toMin(now))) : m);
   for (let i = 0; i < n; i++) {
     const plan = day.windows[Math.min(i, day.windows.length - 1)];
     const nap = naps[i];
-    let end = start + plan;
+    let end = atLeast(start + plan);
     let endPred = true;
     if (nap) [end, endPred] = [after(start, toMin(nap.start)), false];
     else if (i === n - 1 && day.night) [end, endPred] = [after(start, toMin(day.night)), false];
     out.push({ start, end, startPred, endPred });
     if (nap?.end) [start, startPred] = [after(end, toMin(nap.end)), false];
-    else [start, startPred] = [end + napAvg(data, date, i), true];
+    else [start, startPred] = [atLeast(end + napLen(data, date, day, i)), true];
   }
   return out;
 };

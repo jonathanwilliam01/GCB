@@ -48,6 +48,7 @@ export interface SleepDay {
   night?: string;
   wakeBy?: string;
   nightBy?: string;
+  napLen?: number[]; // duração prevista de cada soneca (min), sobrepõe a média
 }
 
 export interface FoodEntry {

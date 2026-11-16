@@ -615,3 +615,7 @@ label.link { display: inline-block; }
 .alert-bar .btn { padding: 8px 10px; white-space: nowrap; }
 @media (min-width: 900px) { .alert-bar { left: 292px; } }
 @media print { .alert-bar { display: none !important; } }
+
+.proj .meal > span { gap: 8px; }
+.proj .len { width: 58px; padding: 2px 6px; text-align: center; font-size: 13px; }
+.proj input.len.custom { border-color: var(--accent); }

@@ -1,15 +1,17 @@
 import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Mask } from './mask';
 import { MealsCard } from './meals';
 import { Store } from './store';
 import { Actions } from './actions';
 import { sleepTip } from './tips';
+import { awakeWindows } from './schedule';
 import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, shiftDate, since, SleepDay, today, toMin } from './models';
 
 @Component({
   selector: 'app-sleep',
-  imports: [FormsModule, Mask, MealsCard],
+  imports: [FormsModule, Mask, MealsCard, NgTemplateOutlet],
   template: `
     <div class="datebar">
       <button class="icon" (click)="go(-1)">‹</button>
@@ -28,6 +30,7 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, s
         <input mask="time" [(ngModel)]="wakeInput" class="time-xl" />
         <button class="btn primary block" (click)="start()">Começar o dia</button>
       </div>
+      <ng-container *ngTemplateOutlet="projCard" />
     } @else {
       @let d = day()!;
       <div class="card">
@@ -81,7 +84,10 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, s
         }
       </div>
 
-      @if (!d.night) { <app-meals [compact]="true" [date]="date()" /> }
+      @if (!d.night) {
+        <app-meals [compact]="true" [date]="date()" />
+        <ng-container *ngTemplateOutlet="projCard" />
+      }
 
       <div class="card">
         <div class="row between">
@@ -123,6 +129,39 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, s
         <button class="btn ghost danger" (click)="removeDay()">Apagar dia</button>
       </div>
     }
+
+    <ng-template #projCard>
+      @if (proj(); as p) {
+        <div class="card proj">
+          <div class="row between">
+            <b>🔮 Previsão do dia</b>
+            <span class="muted small">diurno ≈ {{ dur(p.total) }}</span>
+          </div>
+          @for (n of p.naps; track n.i) {
+            <div class="meal" [class.past]="!n.endPred" [class.next]="n === p.cur">
+              <span>😴 Soneca {{ n.i + 1 }}</span>
+              <span class="row">
+                <span>{{ n.startPred ? '≈ ' : '' }}<b>{{ hm(n.start) }}</b> a {{ n.endPred ? '≈ ' : '' }}{{ hm(n.end) }}</span>
+                @if (day() && n.endPred) {
+                  <input mask="dur" class="len" [class.custom]="n.custom" title="Duração prevista: altere para simular"
+                    [ngModel]="n.len" [ngModelOptions]="{ updateOn: 'blur' }" (ngModelChange)="setLen(n.i, $event)" />
+                } @else {
+                  <small class="muted len">{{ dur(n.len) }}</small>
+                }
+              </span>
+            </div>
+          }
+          <div class="meal" [class.next]="!p.cur">
+            <span>🌙 Sono noturno</span>
+            <span>{{ p.nightPred ? '≈ ' : '' }}<b>{{ hm(p.night) }}</b></span>
+          </div>
+          <p class="muted small">
+            ⓘ Pelas janelas do dia e duração média das sonecas (7 dias). Altere a duração para simular.
+            @if (day()?.napLen) { <button class="link" (click)="resetLen()">↺ usar médias</button> }
+          </p>
+        </div>
+      }
+    </ng-template>
   `,
 })
 export class SleepPage {
@@ -138,7 +177,7 @@ export class SleepPage {
   date = signal(today());
   now = signal(nowHM());
   copied = signal(false);
-  wakeInput = '';
+  wakeInput = signal('');
 
   isToday = computed(() => this.date() === this.todayIso());
   name = computed(() => this.store.data().baby.name || 'o bebê');
@@ -172,6 +211,31 @@ export class SleepPage {
     return { from, window, night, at: fromMin(toMin(from) + window), label: night ? 'sono noturno' : `soneca ${n + 1}` };
   });
   late = computed(() => since(this.next().from, this.now()) - this.next().window);
+  // dia registrado ou, antes de começar, simulação pela hora informada
+  proj = computed(() => {
+    const data = this.store.data();
+    const w0 = this.wakeInput();
+    const d: SleepDay | null = this.day() ?? (/^\d\d:\d\d$/.test(w0) ? { wake: w0, windows: [...data.baby.windows], naps: [] } : null);
+    if (!d || d.night) return null;
+    const w = awakeWindows(data, this.date(), d, this.isToday() ? this.now() : undefined);
+    const naps = w.slice(0, -1).map((x, i) => ({
+      i,
+      start: x.end,
+      end: w[i + 1].start,
+      startPred: x.endPred,
+      endPred: w[i + 1].startPred,
+      len: Math.round(w[i + 1].start - x.end),
+      custom: !!d.napLen?.[i],
+    }));
+    const last = w.at(-1)!;
+    return {
+      naps,
+      cur: naps.find((n) => n.endPred),
+      night: last.end,
+      nightPred: last.endPred,
+      total: naps.reduce((s, n) => s + n.len, 0),
+    };
+  });
   totalSleep = computed(() =>
     (this.day()?.naps ?? []).reduce((s, n) => s + (n.end ? diff(n.start, n.end) : 0), 0),
   );
@@ -183,7 +247,7 @@ export class SleepPage {
     }, 20000);
     inject(DestroyRef).onDestroy(() => clearInterval(t));
     // hora atual só como sugestão de hoje; outro dia começa vazio
-    effect(() => (this.wakeInput = this.isToday() ? nowHM() : ''));
+    effect(() => this.wakeInput.set(this.isToday() ? nowHM() : ''));
   }
 
   winAt(i: number) {
@@ -218,8 +282,24 @@ export class SleepPage {
   }
 
   start() {
-    if (!this.wakeInput && !this.isToday()) return alert('Informe a hora que acordou.');
-    this.actions.startDay(this.date(), this.wakeInput || nowHM());
+    if (!this.wakeInput() && !this.isToday()) return alert('Informe a hora que acordou.');
+    this.actions.startDay(this.date(), this.wakeInput() || nowHM());
+  }
+
+  hm(m: number) {
+    return hh(fromMin(m));
+  }
+
+  setLen(i: number, v: number | null) {
+    this.set((d) => {
+      const a = Array.from({ length: Math.max(d.napLen?.length ?? 0, i + 1) }, (_, k) => d.napLen?.[k] || 0);
+      a[i] = v || 0;
+      d.napLen = a.some(Boolean) ? a : undefined;
+    });
+  }
+
+  resetLen() {
+    this.set((d) => (d.napLen = undefined));
   }
 
   applyTip() {
@@ -288,7 +368,12 @@ export class SleepPage {
       ...d.naps.map((n, i) => `${n.extra && i ? '+' : this.winIdx(i) + 1}- ${hh(n.start)} a ${n.end ? `${hh(n.end)} (${dur(diff(n.start, n.end))})` : '...'}`),
     ];
     if (d.night) lines.push(`🌙 Sono noturno ${hh(d.night)}`);
-    else if (!this.sleeping()) lines.push('', `Próxima: ${this.next().label} ~${hh(this.next().at)}`);
+    else {
+      if (!this.sleeping()) lines.push('', `Próxima: ${this.next().label} ~${hh(this.next().at)}`);
+      const p = this.proj();
+      const fut = p?.naps.filter((n) => n.endPred) ?? [];
+      if (p) lines.push('', 'Previsão:', ...fut.map((n) => `${n.i + 1}- ~${this.hm(n.start)} a ~${this.hm(n.end)}`), `🌙 Noite ~${this.hm(p.night)}`);
+    }
     lines.push(`Total diurno: ${dur(this.totalSleep())}`);
     navigator.clipboard.writeText(lines.join('\n')).then(() => {
       this.copied.set(true);
