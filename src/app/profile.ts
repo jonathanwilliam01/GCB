@@ -7,7 +7,7 @@ import { Backup } from './backup';
 import { Notifier } from './notifier';
 import { Pwa } from './pwa';
 import { PhotoCrop } from './photo-crop';
-import { Baby, Crop, dur } from './models';
+import { Baby, Crop, dur, today } from './models';
 
 @Component({
   selector: 'app-profile',
@@ -74,10 +74,10 @@ import { Baby, Crop, dur } from './models';
           <span class="chip edit">
             {{ i + 1 }}·
             <input mask="dur" [ngModel]="w" [ngModelOptions]="{ updateOn: 'blur' }" (ngModelChange)="setWindow(i, $event)" />
-            @if (b.windows.length > 1) { <button class="icon" (click)="b.windows.splice(i, 1); save()">×</button> }
+            @if (b.windows.length > 1) { <button class="icon" (click)="b.windows.splice(i, 1); saveWindows()">×</button> }
           </span>
         }
-        <button class="chip add" (click)="b.windows.push(b.windows.at(-1) ?? 150); save()">+</button>
+        <button class="chip add" (click)="b.windows.push(b.windows.at(-1) ?? 150); saveWindows()">+</button>
       </div>
     </div>
 
@@ -331,8 +331,18 @@ export class ProfilePage {
   setWindow(i: number, v: number | null) {
     if (v && v > 0) {
       this.b.windows[i] = v;
-      this.save();
+      this.saveWindows();
     }
+  }
+
+  // aplica as janelas também ao dia de hoje, se ainda aberto
+  saveWindows() {
+    const baby = structuredClone(this.b);
+    this.store.mutate((d) => {
+      d.baby = baby;
+      const day = d.days[today()];
+      if (day && !day.night) day.windows = [...baby.windows];
+    });
   }
 
   async importFile(ev: Event) {

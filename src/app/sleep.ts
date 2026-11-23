@@ -61,6 +61,9 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, s
       <div class="card status" [class.sleeping]="sleeping()" [class.late]="!sleeping() && late() > 0">
         @if (d.night) {
           <p class="big">🌙 Sono noturno às {{ hh(d.night) }}</p>
+          @if (nightAwake(); as a) {
+            <p class="muted">acordado {{ dur(a.mins) }} de {{ dur(a.win) }}@if (a.mins - a.win; as dlt) { ({{ dlt > 0 ? '+' : '−' }}{{ dur(abs(dlt)) }}) }</p>
+          }
           <p class="muted">Dia encerrado · sono diurno {{ dur(totalSleep()) }}@if (store.quem(d.nightBy); as q) { · {{ q }} }</p>
           <button class="btn" (click)="actions.undoNight(date())">Desfazer</button>
         } @else if (sleeping()) {
@@ -122,6 +125,11 @@ import { ageMonths, ageText, br, diff, dur, fromMin, hh, mainNaps, Nap, nowHM, s
             <input mask="time" [ngModel]="d.night" (ngModelChange)="set(x => x.night = $event || undefined)" />
           }
         </div>
+        @if (nightAwake(); as a) {
+          <small class="muted">
+            noite: acordado {{ dur(a.mins) }} de {{ dur(a.win) }}@if (a.mins - a.win; as dlt) { ({{ dlt > 0 ? '+' : '−' }}{{ dur(abs(dlt)) }}) }
+          </small>
+        }
       </div>
 
       <div class="row gap">
@@ -209,6 +217,13 @@ export class SleepPage {
     const window = this.winAt(n);
     const night = n >= d.windows.length - 1;
     return { from, window, night, at: fromMin(toMin(from) + window), label: night ? 'sono noturno' : `soneca ${n + 1}` };
+  });
+  nightAwake = computed(() => {
+    const d = this.day();
+    if (!d?.night) return null;
+    const last = mainNaps(d.naps).at(-1);
+    const from = last ? last.end ?? last.start : d.wake;
+    return { mins: diff(from, d.night), win: d.windows.at(-1)! };
   });
   late = computed(() => since(this.next().from, this.now()) - this.next().window);
   // dia registrado ou, antes de começar, simulação pela hora informada

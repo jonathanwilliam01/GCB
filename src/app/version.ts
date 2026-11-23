@@ -1,6 +1,14 @@
-export const VERSION = 'V1.26.11.02';
+export const VERSION = 'V1.26.11.03';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.11.03',
+    date: '2026-11-23',
+    items: [
+      'Editar as janelas padrão do bebê agora também altera as janelas do dia de hoje (antes só valia para os próximos dias)',
+      'Sono noturno mostra o tempo acordado entre a última soneca e a noite, comparado com a última janela (também nos registros antigos)',
+    ],
+  },
   {
     version: 'V1.26.11.02',
     date: '2026-11-12',

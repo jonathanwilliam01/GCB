@@ -1,5 +1,10 @@
 # Patch Notes
 
+## V1.26.11.03 (23/11/2026)
+
+- Editar as janelas padrão do bebê agora também altera as janelas do dia de hoje (antes só valia para os próximos dias)
+- Sono noturno mostra o tempo acordado entre a última soneca e a noite, comparado com a última janela (também nos registros antigos)
+
 ## V1.26.11.02 (12/11/2026)
 
 - Lembretes push chegando no celular com o app fechado (antes só chegavam no computador)
