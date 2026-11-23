@@ -10,9 +10,7 @@ import { Store } from './store';
   template: `
     <div class="auth">
       <section class="auth-hero">
-        <img src="icon.svg" alt="" />
-        <h1>GCB</h1>
-        <p>Gestão e Controle do Bebê</p>
+        <img src="logo-stacked.png" alt="GCB - Gestão e Controle do Bebê" />
         <ul>
           <li>😴 Sono, janelas de vigília e sonecas</li>
           <li>🥕 Alimentação e reações</li>

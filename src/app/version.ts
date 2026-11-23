@@ -1,6 +1,11 @@
-export const VERSION = 'V1.26.11.03';
+export const VERSION = 'V1.26.11.04';
 
 export const PATCH_NOTES: { version: string; date: string; items: string[] }[] = [
+  {
+    version: 'V1.26.11.04',
+    date: '2026-11-23',
+    items: ['Nova identidade visual: ícone do app, favicon, cores roxas e logo na tela de login e no topo do menu lateral'],
+  },
   {
     version: 'V1.26.11.03',
     date: '2026-11-23',

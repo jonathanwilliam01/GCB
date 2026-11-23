@@ -47,13 +47,13 @@ const brand = (name: string, custom: boolean) => {
   imports: [QuickActions, OverviewPage, SleepPage, FoodPage, GrowthPage, ReportsPage, TipsPage, ProfilePage, Acesso],
   template: `
     @if (!store.pronto()) {
-      <div style="min-height: 100vh; display: grid; place-content: center"><img src="icon.svg" width="96" height="96" alt="" /></div>
+      <div style="min-height: 100vh; display: grid; place-content: center"><img src="icon.png" width="96" height="96" alt="" /></div>
     } @else if (!store.bebe() || store.adicionando() || auth.recuperando()) {
       <app-acesso />
     } @else {
     <header>
       <button class="icon menu-btn" aria-label="Menu" (click)="open.set(true)">☰</button>
-      <img class="brand-mark" src="icon.svg" [alt]="store.appName()" (click)="go('overview')" />
+      <img class="brand-mark" src="icon.png" [alt]="store.appName()" (click)="go('overview')" />
       <b class="grow">{{ current().label }}</b>
       @if (store.pendente()) { <span title="Alterações salvas no aparelho, aguardando internet">📴</span> }
       <span class="avatar sm" (click)="go('profile')">
@@ -64,10 +64,14 @@ const brand = (name: string, custom: boolean) => {
     <div class="backdrop" [class.show]="open()" (click)="open.set(false)"></div>
 
     <aside [class.open]="open()">
-      <div class="brand">
-        <img src="icon.svg" alt="" />
-        <div><b>{{ store.appName() }}</b>@if (!store.data().appName) { <small>Gestão e Controle do Bebê</small> }</div>
-      </div>
+      @if (store.data().appName) {
+        <div class="brand">
+          <img src="icon.png" alt="" />
+          <div><b>{{ store.appName() }}</b></div>
+        </div>
+      } @else {
+        <div class="brand logo"><img src="logo-wide.png" alt="GCB - Gestão e Controle do Bebê" /></div>
+      }
 
       <div class="side-head">
         <span class="avatar lg" (click)="go('profile')">

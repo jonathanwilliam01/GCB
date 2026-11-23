@@ -4,8 +4,8 @@
   --text: #22202e;
   --muted: #7a7790;
   --line: #e6e3f0;
-  --accent: #7c6cf0;
-  --accent-soft: #ece9ff;
+  --accent: #7c3aed;
+  --accent-soft: #f0e8ff;
   --sleep: #2f3a68;
   --late: #fff1e6;
   --danger: #d9485f;
@@ -21,8 +21,8 @@
     --text: #ecebf3;
     --muted: #9b98b0;
     --line: #2f2d3d;
-    --accent: #9b8ffa;
-    --accent-soft: #2c2850;
+    --accent: #a98bff;
+    --accent-soft: #2e1d58;
     --sleep: #262e55;
     --late: #3a2a1e;
     --danger: #ff7085;
@@ -38,8 +38,8 @@
   --text: #ecebf3;
   --muted: #9b98b0;
   --line: #2f2d3d;
-  --accent: #9b8ffa;
-  --accent-soft: #2c2850;
+  --accent: #a98bff;
+  --accent-soft: #2e1d58;
   --sleep: #262e55;
   --late: #3a2a1e;
   --danger: #ff7085;
@@ -164,7 +164,7 @@ aside.open { transform: none; box-shadow: 4px 0 24px rgb(0 0 0 / 0.2); }
 app-acesso { display: grid; place-items: center; min-height: 100vh; padding: calc(24px + env(safe-area-inset-top)) 16px 24px; }
 .auth { width: min(420px, 100%); }
 .auth-hero { text-align: center; margin-bottom: 18px; }
-.auth-hero img { width: 76px; height: 76px; border-radius: 20px; }
+.auth-hero img { width: min(260px, 70vw); height: auto; border-radius: 28px; }
 .auth-hero h1 { margin: 10px 0 2px; font-size: 26px; color: var(--accent); letter-spacing: 0.5px; }
 .auth-hero p { margin: 0; color: var(--muted); }
 .auth-hero ul { display: none; }
@@ -187,7 +187,7 @@ app-acesso { display: grid; place-items: center; min-height: 100vh; padding: cal
     padding: 56px 48px;
     text-align: left;
     color: #fff;
-    background: radial-gradient(circle at 85% 10%, rgb(255 255 255 / 0.2), transparent 45%), linear-gradient(155deg, #8b7cf6, #5a49d6);
+    background: radial-gradient(circle at 85% 10%, rgb(255 255 255 / 0.2), transparent 45%), linear-gradient(155deg, #6d28d9, #24074a);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -569,6 +569,8 @@ main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 .brand img { width: 36px; height: 36px; border-radius: 10px; }
 .brand b { display: block; font-size: 17px; letter-spacing: 0.5px; color: var(--accent); }
 .brand small { display: block; color: var(--muted); font-size: 12px; }
+.brand.logo { padding: 0; background: #14062e; }
+.brand.logo img { width: 100%; height: auto; border-radius: 0; display: block; }
 .side-head { padding-top: 18px; }
 .avatar .initial { font-weight: 700; color: var(--accent); font-size: 0.75em; }
 

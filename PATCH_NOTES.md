@@ -1,5 +1,9 @@
 # Patch Notes
 
+## V1.26.11.04 (23/11/2026)
+
+- Nova identidade visual: ícone do app, favicon, cores roxas e logo na tela de login e no topo do menu lateral
+
 ## V1.26.11.03 (23/11/2026)
 
 - Editar as janelas padrão do bebê agora também altera as janelas do dia de hoje (antes só valia para os próximos dias)
